@@ -41,6 +41,7 @@ ScraperSearchComponent::ScraperSearchComponent(Window* window, SearchType type) 
 	mResultName = std::make_shared<TextComponent>(mWindow, "Result name", theme->Text.font, theme->Text.color);
 
 	// selected result thumbnail
+	LOG(LogDebug) << "44 es-app/src/components/ScraperSearchComponent.cpp";
 	mResultThumbnail = std::make_shared<WebImageComponent>(mWindow, 86400); // 24 hours
 	mResultThumbnail->setAllowFading(false);	
 	mResultThumbnail->setOnImageLoaded([this]() { mGrid.onSizeChanged(); });
@@ -48,6 +49,7 @@ ScraperSearchComponent::ScraperSearchComponent(Window* window, SearchType type) 
 	mGrid.setEntry(mResultThumbnail, Vector2i(1, 1), false, false);
 
 	// selected result desc + container
+	LOG(LogDebug) << "52 es-app/src/components/ScraperSearchComponent.cpp";
 	mResultDesc = std::make_shared<TextComponent>(mWindow, "Result desc", theme->TextSmall.font, theme->Text.color);	
 	mResultDesc->setVerticalAlignment(Alignment::ALIGN_TOP);
 	mResultDesc->setAutoScroll(TextComponent::AutoScrollType::VERTICAL);

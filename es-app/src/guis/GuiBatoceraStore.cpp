@@ -439,18 +439,19 @@ GuiBatoceraStoreEntry::GuiBatoceraStoreEntry(Window* window, PacmanPackage& entr
 	mText->setLineSpacing(1.5);
 	mText->setVerticalAlignment(ALIGN_TOP);
 
-	std::string details =
-		_U("\uf0C5  ") + entry.name +
-		_U("  \uf085  ") + entry.available_version +
-		_U("  \uf007  ") + entry.packager;
-		
-	if (!entry.repository.empty() && entry.repository != "batocera")
-		details = details + _U("  \uf114  ") + entry.repository;
+	std::string details = _("");
 
 	if (entry.installed_size > 0)
 		details = details + _U("  \uf0A0  ") + Utils::FileSystem::kiloBytesToString(entry.installed_size);
 	else if (entry.download_size > 0)
 		details = details + _U("  \uf0A0  ") + Utils::FileSystem::kiloBytesToString(entry.download_size);
+
+	details = details + _U("  \uf0C5  ") + entry.name +
+		_U("  \uf085  ") + entry.available_version +
+		_U("  \uf007  ") + entry.packager;
+		
+	if (!entry.repository.empty() && entry.repository != "batocera")
+		details = details + _U("  \uf114  ") + entry.repository;
 
 	if (mIsPending)
 	{

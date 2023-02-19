@@ -1,4 +1,5 @@
 #include "HttpServerThread.h"
+#define HAVE_INTL
 #include "httplib.h"
 #include "Log.h"
 

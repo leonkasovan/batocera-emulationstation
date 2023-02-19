@@ -9,6 +9,7 @@
 #include "Log.h"
 #include "Scripting.h"
 #include <algorithm>
+#define HAVE_INTL
 #include <iomanip>
 #include "guis/GuiInfoPopup.h"
 #include "SystemConf.h"

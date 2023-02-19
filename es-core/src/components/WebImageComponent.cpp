@@ -4,6 +4,7 @@
 #include "utils/ZipFile.h"
 #include "resources/TextureResource.h"
 #include "Paths.h"
+#include "Log.h"
 
 #include <algorithm>
 #include <cctype>
@@ -101,23 +102,24 @@ void WebImageComponent::setImage(const std::string& path, bool tile, MaxSizeInfo
 	}
 
 	mWaitLoaded = true;
-
+	LOG(LogDebug) << "105 es-core/src/components/WebImageComponent.cpp";
 	if (!Utils::String::startsWith(path, "http://") && !Utils::String::startsWith(path, "https://"))
 	{
-		if (path.empty())
+		if (path.empty()){
+			LOG(LogDebug) << "109 es-core/src/components/WebImageComponent.cpp";
 			ImageComponent::setImage(nullptr, 0);
-		else
-		{
+			LOG(LogDebug) << "111 es-core/src/components/WebImageComponent.cpp";
+		}else{
 			ImageComponent::setImage(path, tile, maxSize, checkFileExists, allowMultiImagePlaylist);
 			resize();
 		}
 		return;
 	}
-
+	LOG(LogDebug) << "118 es-core/src/components/WebImageComponent.cpp";
 	url uri = url::parse(path);
 	if (uri.host.empty() || uri.path.empty())
 		return;
-
+	LOG(LogDebug) << "Path: " << path;
 	if (Utils::String::startsWith(uri.path, "/"))
 		uri.path = uri.path.substr(1);
 
@@ -161,6 +163,7 @@ void WebImageComponent::setImage(const std::string& path, bool tile, MaxSizeInfo
 	mMaxSize = maxSize;
 	mUrlToLoad = path;
 	mLocalFile = localFile;
+	LOG(LogDebug) << "165 es-core/src/components/WebImageComponent.cpp";
 }
 
 void WebImageComponent::update(int deltaTime)

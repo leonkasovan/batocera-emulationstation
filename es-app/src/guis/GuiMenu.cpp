@@ -20,6 +20,7 @@
 #include "guis/GuiRetroAchievementsSettings.h"
 #include "guis/GuiSystemInformation.h"
 #include "guis/GuiScraperSettings.h"
+#include "guis/GuiRomInstaller.h"
 #include "views/UIModeController.h"
 #include "views/ViewController.h"
 #include "CollectionSystemManager.h"
@@ -818,6 +819,15 @@ void GuiMenu::openUpdatesSettings()
 	GuiSettings *updateGui = new GuiSettings(mWindow, _("UPDATES & DOWNLOADS").c_str());
 
 	updateGui->addGroup(_("DOWNLOADS"));
+
+	// Themes installer/browser
+	updateGui->addEntry(_("ROMS DOWNLOADER"), true, [this]
+	{
+		if (!checkNetwork())
+			return;
+
+		mWindow->pushGui(new GuiRomInstaller(mWindow));
+	});
 
 	if (ApiSystem::getInstance()->isScriptingSupported(ApiSystem::BATOCERASTORE))
 	{

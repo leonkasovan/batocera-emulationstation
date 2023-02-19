@@ -342,16 +342,20 @@ GuiGameOptions::GuiGameOptions(Window* window, FileData* game) : GuiComponent(wi
 		
 		mMenu.addEntry(_("SCRAPE"), false, [this, game]
 		{
+			LOG(LogDebug) << "345 es-app/src/guis/GuiGameOptions.cpp";
 			ScraperSearchParams scraperParams;
 			scraperParams.game = game;
 			scraperParams.system = game->getSourceFileData()->getSystem();
+			LOG(LogDebug) << "349 es-app/src/guis/GuiGameOptions.cpp";
 
 			GuiGameScraper* scr = new GuiGameScraper(mWindow, scraperParams, [game, scraperParams](const ScraperSearchResult& result)
 			{
+				LOG(LogDebug) << "353 es-app/src/guis/GuiGameOptions.cpp";
 				game->importP2k(result.p2k);
 				game->getMetadata().importScrappedMetadata(result.mdl);	
 				game->detectLanguageAndRegion(true);
 				game->getMetadata().setScrapeDate(result.scraper);
+				LOG(LogDebug) << "358 es-app/src/guis/GuiGameOptions.cpp";
 
 				ViewController::get()->onFileChanged(game, FILE_METADATA_CHANGED);
 			});

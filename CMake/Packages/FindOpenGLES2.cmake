@@ -18,9 +18,12 @@ if(PKG_CONFIG_FOUND)
 endif()
 
 if(OPENGLES2_FOUND)
-    set(OPENGLES2_INCLUDE_DIR ${OPENGLES2_INCLUDE_DIRS})
+    message("OPENGLES2 FOUND")
+    #set(OPENGLES2_INCLUDE_DIR ${OPENGLES2_INCLUDE_DIRS})
+    set(OPENGLES2_INCLUDE_DIR "/usr/include")
     set(OPENGLES2_gl_LIBRARY ${OPENGLES2_LIBRARIES})
 else()
+message("OPENGLES2 NOT FOUND")
     find_path(OPENGLES2_INCLUDE_DIR GLES2/gl2.h
         PATHS "${CMAKE_FIND_ROOT_PATH}/usr/include"
         HINTS ${HINT_GLES_INCDIR}
@@ -33,6 +36,8 @@ else()
 endif()
 
 include(FindPackageHandleStandardArgs)
+message("VDEBUG.1: ${OPENGLES2_gl_LIBRARY}")
+message("VDEBUG.2: ${OPENGLES2_INCLUDE_DIR}")
 find_package_handle_standard_args(OpenGLES2
             REQUIRED_VARS OPENGLES2_gl_LIBRARY OPENGLES2_INCLUDE_DIR)
 
