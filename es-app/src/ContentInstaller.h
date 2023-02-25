@@ -26,6 +26,8 @@ public:
 		CONTENT_BEZEL_UNINSTALL = 3,
 		CONTENT_STORE_INSTALL = 4,
 		CONTENT_STORE_UNINSTALL = 5,
+		CONTENT_ROM_INSTALL = 6,
+		CONTENT_ROM_UNINSTALL = 7,
 	};
 
 	static void Enqueue(Window* window, ContentType type, const std::string contentName);
@@ -38,6 +40,8 @@ private: // Methods
 
 	void updateNotificationComponentTitle(bool incQueueSize);
 	void updateNotificationComponentContent(const std::string info);
+	std::pair<std::string, int> installBatoceraRomPackage(std::string name);
+	std::pair<std::string, int> uninstallBatoceraRomPackage(std::string name);
 
 	void threadUpdate();
 

@@ -48,3 +48,6 @@ CPackSourceConfig.cmake
 /.vs/
 *.sqlite
 .DS_Store
+*.pbp
+test
+main.cpp

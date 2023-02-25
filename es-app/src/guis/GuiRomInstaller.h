@@ -5,6 +5,7 @@
 #include "components/ComponentGrid.h"
 #include "components/ComponentList.h"
 #include "components/ComponentTab.h"
+#include "ContentInstaller.h"
 class Window;
 class SystemData;
 
@@ -15,6 +16,7 @@ struct ROMPackage
 	std::string system;
 	std::string info;
 	std::string status;
+	std::string size;
 
 	bool isInstalled() { return status == "installed"; }
 };
@@ -38,7 +40,7 @@ private:
 	bool mIsPending;
 };
 
-class GuiRomDownloader : public GuiComponent
+class GuiRomDownloader : public GuiComponent, IContentInstalledNotify
 {
 public:
 	GuiRomDownloader(Window* window, std::string last_search_name, std::vector<SystemData*> systems);
@@ -50,7 +52,7 @@ public:
 	virtual std::vector<HelpPrompt> getHelpPrompts() override;
 	virtual void onSizeChanged() override;
 
-	// void OnContentInstalled(int contentType, std::string contentName, bool success) override;
+	void OnContentInstalled(int contentType, std::string contentName, bool success) override;
 
 private:
 	static std::vector<ROMPackage> queryPackages();
@@ -81,6 +83,7 @@ private:
 	std::string						mTextFilter;
 
 	std::string						mArchitecture;
+	AsyncNotificationComponent* mWndNotification;
 };
 
 

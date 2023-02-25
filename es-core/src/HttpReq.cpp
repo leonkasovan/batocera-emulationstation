@@ -6,7 +6,7 @@
 #include <assert.h>
 #include <thread>
 
-#include <SDL.h>
+// #include <SDL.h>
 
 #ifdef WIN32
 #include <time.h>
@@ -15,8 +15,8 @@
 #endif
 
 #include <mutex>
-static std::mutex mMutex;
-
+// static std::mutex mMutex;
+//void WriteLog(const char *data);
 CURLM* HttpReq::s_multi_handle = curl_multi_init();
 
 std::map<CURL*, HttpReq*> HttpReq::s_requests;
@@ -93,7 +93,7 @@ std::string _regGetString(HKEY hKey, const std::string &strPath, const std::stri
 #endif
 
 HttpReq::HttpReq(const std::string& url, const std::string& outputFilename) 
-	: mStatus(REQ_IN_PROGRESS), mHandle(NULL), mFile(NULL)
+	: mStatus(REQ_IN_PROGRESS), mHandle(NULL), mFile(NULL), mContentLength(-1)
 {
 	HttpReqOptions options;
 	options.outputFilename = outputFilename;	
@@ -101,7 +101,7 @@ HttpReq::HttpReq(const std::string& url, const std::string& outputFilename)
 }
 
 HttpReq::HttpReq(const std::string& url, HttpReqOptions* options)
-	: mStatus(REQ_IN_PROGRESS), mHandle(NULL), mFile(NULL)
+	: mStatus(REQ_IN_PROGRESS), mHandle(NULL), mFile(NULL), mContentLength(-1)
 {
 	performRequest(url, options);
 }
@@ -152,15 +152,6 @@ void HttpReq::performRequest(const std::string& url, HttpReqOptions* options)
 
 		curl_easy_setopt(mHandle, CURLOPT_HTTPHEADER, hs);
 	}
-	/*
-	struct curl_slist *hs = NULL;
-	hs = curl_slist_append(hs, "Content-Type: application/json");
-	curl_easy_setopt(mHandle, CURLOPT_HTTPHEADER, hs);
-
-	curl_easy_setopt(mHandle, CURLOPT_POST, 1L);
-	curl_easy_setopt(mHandle, CURLOPT_POSTFIELDS, "postvar1=value1&postvar2=value2&postvar3=value3");
-	curl_setopt($ch,CURLOPT_RETURNTRANSFER, true);
-	*/
 
 	//set curl to handle redirects
 	err = curl_easy_setopt(mHandle, CURLOPT_FOLLOWLOCATION, 1L);
@@ -219,6 +210,15 @@ void HttpReq::performRequest(const std::string& url, HttpReqOptions* options)
 		return;
 	}
 
+	// ask libcurl to allocate a larger receive buffer
+	err = curl_easy_setopt(mHandle, CURLOPT_BUFFERSIZE, 120000L);
+	if(err != CURLE_OK)
+	{
+		mStatus = REQ_IO_ERROR;
+		onError(curl_easy_strerror(err));
+		return;
+	}
+
 	// Set fake user agent
 	err = curl_easy_setopt(mHandle, CURLOPT_USERAGENT, "Mozilla/5.0 (Windows NT x.y; Win64; x64; rv:10.0) Gecko/20100101 Firefox/10.0");
 	if (err != CURLE_OK)
@@ -259,8 +259,7 @@ void HttpReq::performRequest(const std::string& url, HttpReqOptions* options)
 		}
 	}
 #endif
-	
-	std::unique_lock<std::mutex> lock(mMutex);
+	// std::unique_lock<std::mutex> lock(mMutex);
 
 	if (!mFilePath.empty())
 	{
@@ -284,7 +283,6 @@ void HttpReq::performRequest(const std::string& url, HttpReqOptions* options)
 		mPosition = 0;
 		Utils::FileSystem::removeFile(outputFilename);
 	}
-
 	//add the handle to our multi
 	CURLMcode merr = curl_multi_add_handle(s_multi_handle, mHandle);
 	if(merr != CURLM_OK)
@@ -295,8 +293,8 @@ void HttpReq::performRequest(const std::string& url, HttpReqOptions* options)
 		onError(curl_multi_strerror(merr));
 		return;
 	}
-
 	s_requests[mHandle] = this;
+	// WriteLog("HttpReq::performRequest end");
 }
 
 void HttpReq::closeStream()
@@ -311,13 +309,10 @@ void HttpReq::closeStream()
 
 HttpReq::~HttpReq()
 {
-	std::unique_lock<std::mutex> lock(mMutex);
-
+	// std::unique_lock<std::mutex> lock(mMutex);
 	closeStream();
-	
 	if (!mTempStreamPath.empty())
 		Utils::FileSystem::removeFile(mTempStreamPath);
-
 	if(mHandle)
 	{
 		s_requests.erase(mHandle);
@@ -335,7 +330,7 @@ HttpReq::Status HttpReq::status()
 {
 	if (mStatus == REQ_IN_PROGRESS)
 	{
-		std::unique_lock<std::mutex> lock(mMutex);
+		// std::unique_lock<std::mutex> lock(mMutex);
 
 		int handle_count;
 		CURLMcode merr = curl_multi_perform(s_multi_handle, &handle_count);
@@ -360,7 +355,6 @@ HttpReq::Status HttpReq::status()
 					LOG(LogError) << "Cannot find easy handle!";
 					continue;
 				}
-
 				req->closeStream();
 
 				if (req->mStatus == REQ_FILESTREAM_ERROR)
@@ -442,7 +436,6 @@ HttpReq::Status HttpReq::status()
 			}
 		}
 	}
-
 	return mStatus;
 }
 
@@ -453,6 +446,7 @@ std::string HttpReq::getContent()
 
 	try
 	{
+		// WriteLog("HttpReq::getContent() 1");
 		closeStream();
 
 		if (!Utils::FileSystem::exists(mTempStreamPath))
@@ -531,7 +525,8 @@ size_t HttpReq::write_content(void* buff, size_t size, size_t nmemb, void* req_p
 		return 0;
 
 	size_t rs = size * nmemb;
-	fwrite(buff, 1, rs, file) != rs;	
+	// fwrite(buff, 1, rs, file) != rs;
+	fwrite(buff, size, nmemb, file) != rs;
 	if (ferror(file))
 	{
 		request->closeStream();			
@@ -541,15 +536,15 @@ size_t HttpReq::write_content(void* buff, size_t size, size_t nmemb, void* req_p
 		return 0;
 	}
 
-	double cl;
-	if (!curl_easy_getinfo(request->mHandle, CURLINFO_CONTENT_LENGTH_DOWNLOAD, &cl))
-	{		
+	// if (!curl_easy_getinfo(request->mHandle, CURLINFO_CONTENT_LENGTH_DOWNLOAD_T, &cl))
+	if (request->mContentLength <= 0){
+		curl_easy_getinfo(request->mHandle, CURLINFO_CONTENT_LENGTH_DOWNLOAD_T, &(request->mContentLength));
+	}
+	if (request->mContentLength <= 0)
+		request->mPercent = -1;
+	else{
 		request->mPosition += rs;
-
-		if (cl <= 0)
-			request->mPercent = -1;
-		else
-			request->mPercent = (int) (request->mPosition * 100.0 / cl);
+		request->mPercent = (int) (request->mPosition * 100.0 / request->mContentLength);
 	}
 
 	return nmemb;

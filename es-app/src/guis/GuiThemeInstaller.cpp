@@ -387,7 +387,7 @@ GuiBatoceraThemeEntry::GuiBatoceraThemeEntry(Window* window, BatoceraTheme& entr
 	}
 
 	details = details + "\r\n";
-	details = details + _U("\uf0AC  ") + entry.url;
+	// details = details + _U("\uf0AC  ") + entry.url;
 
 	if (mIsCurrentTheme)
 		details = _U("\uf05A  ") + _("CURRENT THEME") + std::string("  ") + details;
@@ -434,7 +434,7 @@ GuiBatoceraThemeEntry::GuiBatoceraThemeEntry(Window* window, BatoceraTheme& entr
 	{
 		Vector2f maxSize(windowWidth * refImageWidth, itemHeight * 0.85f);
 
-		mPreviewImage = std::make_shared<WebImageComponent>(window, 600); // image expire after 10 minutes
+		mPreviewImage = std::make_shared<WebImageComponent>(window, 6000); // image expire after 10 minutes
 		mPreviewImage->setImage(mEntry.image, false, maxSize);		
 		mPreviewImage->setMaxSize(maxSize);
 		// mPreviewImage->setRoundCorners(0.02);

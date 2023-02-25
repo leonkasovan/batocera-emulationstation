@@ -4,6 +4,9 @@
 #include "utils/StringUtil.h"
 #include "ApiSystem.h"
 #include "LocaleES.h"
+#include <utility>
+#include "HttpReq.h"
+#include "Paths.h"
 
 #define ICONINDEX _U("\uF019 ")
 
@@ -12,6 +15,8 @@ std::mutex								ContentInstaller::mLock;
 std::list<std::pair<int, std::string>>	ContentInstaller::mQueue;
 std::list<std::pair<int, std::string>>	ContentInstaller::mProcessingQueue;
 std::list<IContentInstalledNotify*>		ContentInstaller::mNotification;
+
+// void WriteLog(const char *data);
 
 void ContentInstaller::Enqueue(Window* window, ContentType type, const std::string contentName)
 {
@@ -100,6 +105,61 @@ void ContentInstaller::updateNotificationComponentContent(const std::string info
 	{
 		mWndNotification->updatePercent(-1);
 		mWndNotification->updateText(info);
+	}
+}
+
+// name: "/userdata/roms/snes/tetris.zip|http://www.archieve.com/download/tetris.zip"
+std::pair<std::string, int> ContentInstaller::installBatoceraRomPackage(std::string name){
+	char filename[1024];
+	char url[1024];
+	const char *src;
+	char *dst;
+
+	src = name.c_str();
+	dst = filename;
+	while(*src && *src != '|'){
+		*dst++ = *src++;
+	}
+	*dst = 0;
+
+	if (*src != '|'){
+		return std::pair<std::string, int>("INVALID FORMAT INPUT. MISSING SEPARATOR", -1);
+	}
+
+	src++;
+	dst = url;
+	while(*src){
+		*dst++ = *src++;
+	}
+	*dst = 0;
+
+	HttpReq httpreq(url, filename);
+	int curPos = -1;
+	while (httpreq.status() == HttpReq::REQ_IN_PROGRESS)
+	{
+		double pos = httpreq.getPosition();
+		if (pos > 0 && curPos != pos)
+		{
+			mWndNotification->updateText(Utils::String::format("%d%%", httpreq.getPercent()));
+			mWndNotification->updatePercent(httpreq.getPercent());
+			curPos = pos;
+		}
+		// std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+		// std::this_thread::sleep_for(std::chrono::milliseconds(10));
+	}
+
+	if (httpreq.status() == HttpReq::REQ_SUCCESS)
+		return std::pair<std::string, int>(_("DOWNLOAD ROM SUCCESS"),0);
+	else
+		return std::pair<std::string, int>(_("DOWNLOAD ROM FAILED"),-1);
+}
+
+// name: "/userdata/roms/snes/tetris.zip"
+std::pair<std::string, int> ContentInstaller::uninstallBatoceraRomPackage(std::string name){
+	if (Utils::FileSystem::removeFile(name)){
+		return std::pair<std::string, int>("Removing ROM success", 0);
+	}else{
+		return std::pair<std::string, int>("Removing ROM failed", -1);
 	}
 }
 
@@ -230,6 +290,35 @@ void ContentInstaller::threadUpdate()
 			{
 				success = true;
 				mWindow->displayNotificationMessage(ICONINDEX + data.second + " : " + _("PACKAGE REMOVED SUCCESSFULLY"));
+			}
+			else
+			{
+				std::string error = _("AN ERROR OCCURED") + std::string(": ") + updateStatus.first;
+				mWindow->displayNotificationMessage(ICONINDEX + error);
+			}
+		}else if (data.first == ContentType::CONTENT_ROM_INSTALL)
+		{
+			updateStatus = installBatoceraRomPackage(data.second);
+
+			if (updateStatus.second == 0)
+			{
+				success = true;
+				mWindow->displayNotificationMessage(ICONINDEX + _(" : ROM INSTALLED SUCCESSFULLY"));
+			}
+			else
+			{
+				std::string error = _("AN ERROR OCCURED") + std::string(": ") + updateStatus.first;
+				mWindow->displayNotificationMessage(ICONINDEX + error);
+			}
+		}
+		else if (data.first == ContentType::CONTENT_ROM_UNINSTALL)
+		{
+			updateStatus = uninstallBatoceraRomPackage(data.second);
+
+			if (updateStatus.second == 0)
+			{
+				success = true;
+				mWindow->displayNotificationMessage(ICONINDEX + data.second + " : " + _("ROM REMOVED SUCCESSFULLY"));
 			}
 			else
 			{

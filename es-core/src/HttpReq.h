@@ -125,6 +125,7 @@ private:
 
 	int mPercent;
 	double mPosition;
+	curl_off_t mContentLength;
 
 	std::map<std::string, std::string> mResponseHeaders;	
 };
