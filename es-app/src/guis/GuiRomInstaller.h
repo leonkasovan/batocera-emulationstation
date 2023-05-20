@@ -91,6 +91,7 @@ class GuiRomInstaller : public GuiSettings
 {
 public:
 	GuiRomInstaller(Window* window);
+	~GuiRomInstaller();
 	bool isSupportedPlatform(SystemData* system);
 	void pressedStart();
 	std::shared_ptr<OptionListComponent<SystemData*>> mSystems;

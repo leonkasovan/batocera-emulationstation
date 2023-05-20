@@ -434,7 +434,7 @@ GuiBatoceraThemeEntry::GuiBatoceraThemeEntry(Window* window, BatoceraTheme& entr
 	{
 		Vector2f maxSize(windowWidth * refImageWidth, itemHeight * 0.85f);
 
-		mPreviewImage = std::make_shared<WebImageComponent>(window, 6000); // image expire after 10 minutes
+		mPreviewImage = std::make_shared<WebImageComponent>(window, 6000); // image expire after 100 minutes
 		mPreviewImage->setImage(mEntry.image, false, maxSize);		
 		mPreviewImage->setMaxSize(maxSize);
 		// mPreviewImage->setRoundCorners(0.02);

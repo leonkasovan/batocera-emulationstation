@@ -21,7 +21,7 @@
 #include "guis/GuiImageViewer.h"
 #include "views/SystemView.h"
 #include "GuiGameAchievements.h"
-#include "guis/GuiGameOptions.h"
+// #include "guis/GuiGameOptions.h"
 #include "views/gamelist/ISimpleGameListView.h"
 
 std::vector<std::string> GuiGamelistOptions::gridSizes {

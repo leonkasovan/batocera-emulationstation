@@ -77,7 +77,7 @@ GuiRomInstaller::GuiRomInstaller(Window* window) : GuiSettings(window, _("ROMS D
 	mSupportedSystems = SystemConf::getInstance()->get("rom_downloader.supported");
 	// addGroup(_("SEARCH FILTER"));
 	// addWithLabel(_("SOURCE"), std::make_shared<TextComponent>(window, "Archieve.org", font, color));
-	addInputTextRow(_("NAME"), "rom_downloader.last_search_name", false);
+	addInputTextRow(_("SEARCH GAME NAME"), "rom_downloader.last_search_name", false);
 	mSystems = std::make_shared<OptionListComponent<SystemData*>>(mWindow, _("SYSTEMS INCLUDED"), true);
 
 	for (auto system : SystemData::sSystemVector)
@@ -93,6 +93,11 @@ GuiRomInstaller::GuiRomInstaller(Window* window) : GuiSettings(window, _("ROMS D
 		mMenu.setPosition((Renderer::getScreenWidth() - mMenu.getSize().x()) / 2, (Renderer::getScreenHeight() - mMenu.getSize().y()) / 2);
 	else
 		mMenu.setPosition((mSize.x() - mMenu.getSize().x()) / 2, Renderer::getScreenHeight() * 0.15f);
+}
+
+GuiRomInstaller::~GuiRomInstaller()
+{
+	ViewController::reloadAllGames(mWindow, false);
 }
 
 void GuiRomInstaller::pressedStart()
@@ -129,7 +134,7 @@ GuiRomDownloader::GuiRomDownloader(Window* window, std::string last_search_name,
 
 	// Tabs
 	mTabs = std::make_shared<ComponentTab>(mWindow);
-	mTabs->addTab("ALL");
+	mTabs->addTab("ROMs");
 	mGrid.setEntry(mTabs, Vector2i(0, 1), false, true);	
 
 	// Entries
