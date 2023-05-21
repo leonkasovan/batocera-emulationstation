@@ -12,11 +12,13 @@ class SystemData;
 // reference: PacmanPackage (ApiSystem.h)
 struct ROMPackage
 {
-	std::string id;
+	std::string no;
+	std::string name;
 	std::string system;
-	std::string info;
+	std::string title;
 	std::string status;
-	std::string size;
+	std::string desc;
+	std::string url;
 
 	bool isInstalled() { return status == "installed"; }
 };
@@ -61,6 +63,7 @@ private:
 	void processPackage(ROMPackage package);
 	void centerWindow();
 	void showSearch();
+	int find_csv2(const char *fname, const char *in_category, char **lword, unsigned int start_no);
 
 	int				mReloadList;
 	std::vector<ROMPackage> mPackages;

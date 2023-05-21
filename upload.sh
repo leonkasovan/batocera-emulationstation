@@ -1,6 +1,5 @@
 #!/bin/bash
 strip -s emulationstation
-sftp root@192.168.1.14 <<EOF
+sftp root@192.168.1.15 <<EOF
 put emulationstation
-#put test
 EOF
