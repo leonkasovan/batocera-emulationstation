@@ -54,30 +54,48 @@ void url_decode(char *url) {
     *dest = '\0';
 }
 
+#define MAX_LINE 2048
+char *get_system_in_csv_file(const char *path, char *buffer) {
+	char line[MAX_LINE];
+	char *p, *q;
+	FILE *fi;
+
+	fi = fopen(path, "r");
+	if (!fi) {
+		return NULL;
+	}
+	fgets(line, MAX_LINE-1, fi);	// Line 1: #category=snes
+	p = strchr(line, '=');
+	if (!p) {
+		return NULL;
+	}
+	p++;
+	q = buffer;
+	while ( (*p != '\r') && (*p != '\n') && (*p != '\0')) {
+		*q++ = *p++;
+	}
+	*q = '\0';
+	fclose(fi);
+	return buffer;
+}
+
 std::string getDestinationPath(std::string system, std::string name){
 	std::string dest;
-	char s_pid[1024];
+	char s_pid[MAX_LINE];
 	char *p;
-	//FILE *flog;
-
-	//flog = fopen("/userdata/system/logs/getDestinationPath.log","a");
 	strcpy(s_pid, name.c_str());
-	//fprintf(flog, "before,s_pid=[%s]\n", s_pid);
 	url_decode(s_pid);
 	p = strrchr(s_pid, '/');
-	//fprintf(flog, "after,s_pid=[%s]\n", s_pid);
 	if (p)
 		dest = Utils::String::format("/userdata/roms/%s/%s", system.c_str(), p+1);
 	else
 		dest = Utils::String::format("/userdata/roms/%s/%s", system.c_str(), s_pid);
 	
-	//fprintf(flog, "dest=[%s]\n", dest.c_str());
-	//fclose(flog);
 	return dest;
 }
 
-bool GuiRomInstaller::isSupportedPlatform(SystemData* system){
-	return (mSupportedSystems.find(","+system->getName()+",") != std::string::npos);
+bool GuiRomInstaller::isSupportedPlatform(std::string system){
+	return (mSupportedSystems.find(","+system+",") != std::string::npos);
 }
 
 GuiRomInstaller::GuiRomInstaller(Window* window) : GuiSettings(window, _("ROMS DOWNLOAD").c_str())
@@ -88,24 +106,25 @@ GuiRomInstaller::GuiRomInstaller(Window* window) : GuiSettings(window, _("ROMS D
 	unsigned int color = theme->Text.color;
 	
 	mSupportedSystems = SystemConf::getInstance()->get("rom_downloader.supported");
-	// addGroup(_("SEARCH FILTER"));
-	// addWithLabel(_("SOURCE"), std::make_shared<TextComponent>(window, "Archieve.org", font, color));
 	addInputTextRow(_("SEARCH GAME NAME"), "rom_downloader.last_search_name", false);
-	mSystems = std::make_shared<OptionListComponent<SystemData*>>(mWindow, _("SYSTEMS INCLUDED"), true);
 
-	//FILE *flog;
-	//flog = fopen("/userdata/system/logs/RG353P-systems.txt","w");
-	for (auto system : SystemData::sSystemVector){
-		std::string str_system;
-		if (system->isGameSystem() && !system->isCollection() && !system->hasPlatformId(PlatformIds::PLATFORM_IGNORE) && isSupportedPlatform(system)){
-			//mSystems->add(system->getName()+"-"+system->getFullName(), system, true);
-			mSystems->add(system->getName(), system, true);
-		}
-		str_system = system->getName();
-		//fprintf(flog, "%s\n", str_system.c_str());
+	mSystems = std::make_shared<OptionListComponent<std::string>>(mWindow, _("SYSTEMS INCLUDED"), true);
+	DIR *dir;
+	char buffer[2048];
+	char fullpath[MAX_LINE];
+	struct dirent *entry;
+	std::string db_path = SystemConf::getInstance()->get("rom_downloader.db.path");
+	if ( (dir = opendir(db_path.c_str())) ) {
+		entry = readdir(dir);
+		do {
+			if (strstr(entry->d_name, ".csv")) {
+				sprintf(fullpath, "%s/%s", db_path.c_str(), entry->d_name);
+				get_system_in_csv_file(fullpath, buffer);
+				mSystems->add(buffer, buffer, true);
+			}
+		} while ((entry = readdir(dir)) != NULL);
+		closedir(dir);
 	}
-	//fclose(flog);
-
 	addWithLabel(_("SYSTEMS INCLUDED"), mSystems);
 
 	mMenu.clearButtons();
@@ -125,12 +144,9 @@ GuiRomInstaller::~GuiRomInstaller()
 void GuiRomInstaller::pressedStart()
 {
 	std::string last_search_name = SystemConf::getInstance()->get("rom_downloader.last_search_name");
-	std::vector<SystemData*> systems = mSystems->getSelectedObjects();
+	std::vector<std::string> systems = mSystems->getSelectedObjects();
 	mWindow->pushGui(new GuiRomDownloader(mWindow, last_search_name, systems));
 }
-
-#define MAX_PATH 1024
-#define MAX_LINE 2048
 
 // Split and allocate memory
 // After using the result, free it with 'free_word'
@@ -211,30 +227,21 @@ int GuiRomDownloader::find_csv2(const char *fname, const char *in_category, char
 	char line[MAX_LINE];
 	char *category = NULL, *url = NULL, *p;
 	char *a_name, *a_title, *a_desc, *next;
-	FILE *flog;
 
-	flog = fopen("/userdata/system/logs/custom_es2.log","a");
 	f = fopen(fname, "r");
 	if (!f) {
-		printf("Error: can not open file csv: %s\n", fname);
-		fprintf(flog, "Error: can not open file csv: %s\n", fname);
-		fclose(flog);
 		return start_no;
 	}
-	fprintf(flog, "fname: [%s]\n", fname);
 	
-	fgets(line, MAX_LINE, f);	// Line 1: #category=snes
+	fgets(line, MAX_LINE, f);	// Line 1: #category=snes\r\n
 	if ( (p = strchr(line, '=') )) {
-		category = strdup(p + 1);
+		category = strdup(p);
+		*category = ',';	// category = ",snes\r\n"
 		p = strrchr(category, '\r'); if (p) *p = '\0';	// replace \r to \0
 		p = strrchr(category, '\n'); if (p) *p = '\0';	// replace \n to \0
-		//fprintf(flog, "category: [%s]\n", category);
 		if (in_category){
-			//fprintf(flog, "in_category: [%s]\n", in_category);
 			if (!strstr(in_category, category)) {	// skip category if not requested
-				//fprintf(flog, "Cant find [%s] in_category: [%s]\n", category, in_category);
 				fclose(f); free(category);
-				fclose(flog);
 				return start_no;
 			}
 		}
@@ -255,13 +262,10 @@ int GuiRomDownloader::find_csv2(const char *fname, const char *in_category, char
 	}
 
 	if (!url) {
-		printf("Error: invalid format csv. Can not find '='");
-		fclose(flog);
 		fclose(f);
 		if (category) free(category);
 		return start_no;
 	}
-	//fprintf(flog, "url: [%s]\n", url);
 	while (fgets(line, MAX_LINE, f)) { // Process next line: the real csv data
 		a_name = strtok(line, "|");
 		a_title = strtok(NULL, "|");
@@ -281,7 +285,7 @@ int GuiRomDownloader::find_csv2(const char *fname, const char *in_category, char
 			package.no = std::to_string(start_no);
 			package.desc = a_desc;	// 257MB - 2p - (c)1998 Capcom
 			package.name = a_name;	//airbustr.zip avsp.zip roms%2Favsp.zip
-			package.system = category;	// gba,snes,mame,megadrive
+			package.system = (char *)(category+1);	// gba,snes,mame,megadrive	+1 = skip leading ,
 			package.title = a_title;	// "Tetris Attack (US)", "Super Mario Bros (US)"
 			package.url = url;
 			package.url = package.url+ "/" + package.name;
@@ -293,18 +297,16 @@ int GuiRomDownloader::find_csv2(const char *fname, const char *in_category, char
 				row.makeAcceptInputHandler([this, package] { processPackage(package); });
 			}
 			mList->addRow(row, false, false);
-			fprintf(flog, "found: [%s]\n%s\n", a_title, package.url.c_str());
 		}
 	}
 	fclose(f);
-	fclose(flog);
 	if (category) free(category);
 	if (url) free(url);
 	return start_no;
 }
 
 #define WINDOW_WIDTH (float)Math::min(Renderer::getScreenHeight() * 1.125f, Renderer::getScreenWidth() * 0.95f)
-GuiRomDownloader::GuiRomDownloader(Window* window, std::string last_search_name, std::vector<SystemData*> systems)
+GuiRomDownloader::GuiRomDownloader(Window* window, std::string last_search_name, std::vector<std::string> systems)
 	: GuiComponent(window), mGrid(window, Vector2i(1, 4)), mBackground(window, ":/frame.png")
 {
 	mReloadList = 1;
@@ -344,19 +346,14 @@ GuiRomDownloader::GuiRomDownloader(Window* window, std::string last_search_name,
 	char *in_keyword = NULL;
 	std::string in_systems = ",";
 	char **lword;
-	//FILE *flog;
-	char fullpath[MAX_PATH];
+	char fullpath[MAX_LINE];
 	
 	in_keyword = strdup(last_search_name.c_str());
 	SDL_strlwr(in_keyword);
 	for(auto system : systems){
-		in_systems += system->getName() + ",";
+		in_systems += system + ",";
 	}
 
-	//flog = fopen("/userdata/system/logs/custom_es.log","w");
-	//fprintf(flog, "in_keyword: [%s]\n", in_keyword);
-	//fprintf(flog, "in_systems: [%s]\n", in_systems.c_str());
-	//fprintf(flog, "db_path: [%s]\n", db_path.c_str());
 	if ((dir = opendir(db_path.c_str())) == NULL) {
 		mWindow->pushGui(new GuiMsgBox(mWindow, Utils::String::format("Error opendir for path %s", db_path.c_str())));
 		free(in_keyword);
@@ -367,56 +364,12 @@ GuiRomDownloader::GuiRomDownloader(Window* window, std::string last_search_name,
 			if (strstr(entry->d_name, ".csv")) {
 				sprintf(fullpath, "%s%s", db_path.c_str(), entry->d_name);
 				n_found = find_csv2(fullpath, in_systems.c_str(), lword, n_found);
-				//fprintf(flog, "find: in [%s] => %d\n", entry->d_name, n_found);
 			}
 		} while ((entry = readdir(dir)) != NULL);
 		free_word(lword);
 		free(in_keyword);
 		closedir(dir);
 	}
-	//fclose(flog);
-	
-
-	/*for(auto system : systems){
-		std::string db_file;
-		FILE *f;
-		char line[1024];
-		char *p, *rom_name, *next_coloumn;
-
-		db_file = db_path+SystemConf::getInstance()->get("rom_downloader.db."+ system->getName());
-		f = fopen(db_file.c_str(),"rt");
-		if (!f) {
-			mWindow->pushGui(new GuiMsgBox(mWindow, Utils::String::format("Can't open %s",db_file.c_str())));
-			continue;
-		}
-		while (fgets(line,1023,f)) {
-			p = strrchr(line, '\n'); if (p) *p = 0;	//trim last newline
-			p = strchr(line, '|');
-			if (p) {
-				*p = 0;	//Ending for first coloumn
-				next_coloumn = (char *)(p + 1);
-				if (Utils::String::containsIgnoreCase(next_coloumn, last_search_name)) {
-					ROMPackage package;
-
-					rom_name = p + 1;
-					n_found++;
-					p = strchr(rom_name, '|'); if (p) { package.size = (char *)(p+1); *p = 0;}
-					//store 1.rom_id(for url downloading) 2.system name(gba,snes,mame,megadrive) 3.rom name(Tetris Attack...)
-					package.id = line;
-					package.system = system->getName();
-					package.info = rom_name;
-					package.status = Utils::FileSystem::exists(getDestinationPath(package.system, package.id))?"installed":"";
-					auto grid = std::make_shared<ROMEntry>(mWindow, package);
-					ComponentListRow row;
-					row.addElement(grid, true);
-					if (!grid->isInstallPending())
-						row.makeAcceptInputHandler([this, package] { processPackage(package); });
-					mList->addRow(row, false, false);
-				}
-			}
-		}
-		fclose(f);
-	}*/
 
 	if (n_found == 0){
 		ComponentListRow row;
@@ -430,9 +383,6 @@ GuiRomDownloader::GuiRomDownloader(Window* window, std::string last_search_name,
 
 	// Buttons
 	std::vector< std::shared_ptr<ButtonComponent> > buttons;
-	// buttons.push_back(std::make_shared<ButtonComponent>(mWindow, _("SEARCH"), _("SEARCH"), [this] {  showSearch(); }));
-	// buttons.push_back(std::make_shared<ButtonComponent>(mWindow, _("REFRESH"), _("REFRESH"), [this] {  loadPackagesAsync(true, true); }));
-	// buttons.push_back(std::make_shared<ButtonComponent>(mWindow, _("UPDATE INSTALLED CONTENT"), _("UPDATE INSTALLED CONTENT"), [this] {  loadPackagesAsync(true, false); }));
 	buttons.push_back(std::make_shared<ButtonComponent>(mWindow, _("BACK"), _("BACK"), [this] { delete this; }));
 	mButtonGrid = makeButtonGrid(mWindow, buttons);
 	mGrid.setEntry(mButtonGrid, Vector2i(0, 3), true, false);
@@ -443,9 +393,7 @@ GuiRomDownloader::GuiRomDownloader(Window* window, std::string last_search_name,
 		if (config->isMappedLike("up", input)) { mList->setCursorIndex(mList->size() - 1); mGrid.moveCursor(Vector2i(0, 1)); return true; }
 		return false;
 	});
-
 	centerWindow();
-
 	ContentInstaller::RegisterNotify(this);
 }
 
@@ -463,51 +411,23 @@ void GuiRomDownloader::OnContentInstalled(int contentType, std::string contentNa
 void GuiRomDownloader::update(int deltaTime)
 {
 	GuiComponent::update(deltaTime);
-
-	// if (mReloadList != 0)
-	// {
-	// 	bool refreshPackages = mReloadList == 2;
-	// 	bool silent = (mReloadList == 2 || mReloadList == 3);
-	// 	bool restoreIndex = (mReloadList != 3);		
-	// 	mReloadList = 0;
-
-	// 	if (silent)
-	// 	{
-			// if (refreshPackages)
-			// 	mPackages = queryPackages();
-
-			// if (!restoreIndex)
-			// 	mWindow->postToUiThread([this]() { loadList(false, false); });
-			// else 
-			// 	loadList(false, restoreIndex);
-		// }
-		// else 
-		// 	loadPackagesAsync(false, true);
-		// loadList(false, false);	// tambahan
-	// }
 }
 
 void GuiRomDownloader::onSizeChanged()
 {
 	GuiComponent::onSizeChanged();
-
 	mBackground.fitTo(mSize, Vector3f::Zero(), Vector2f(-32, -32));
-
 	mGrid.setSize(mSize);
-
 	const float titleHeight = mTitle->getFont()->getLetterHeight();
 	const float subtitleHeight = mSubtitle->getFont()->getLetterHeight();
 	const float titleSubtitleSpacing = mSize.y() * 0.03f;
-
 	mGrid.setRowHeightPerc(0, (titleHeight + titleSubtitleSpacing + subtitleHeight + TITLE_VERT_PADDING) / mSize.y());
-
 	if (mTabs->size() == 0)
 		mGrid.setRowHeightPerc(1, 0.00001f);
 	else 
 		mGrid.setRowHeightPerc(1, (titleHeight + titleSubtitleSpacing) / mSize.y());
 
 	mGrid.setRowHeightPerc(3, mButtonGrid->getSize().y() / mSize.y());
-
 	mHeaderGrid->setRowHeightPerc(1, titleHeight / mHeaderGrid->getSize().y());
 	mHeaderGrid->setRowHeightPerc(2, titleSubtitleSpacing / mHeaderGrid->getSize().y());
 	mHeaderGrid->setRowHeightPerc(3, subtitleHeight / mHeaderGrid->getSize().y());
@@ -533,36 +453,16 @@ static bool sortPackagesByGroup(ROMPackage& sys1, ROMPackage& sys2)
 
 void GuiRomDownloader::loadList(bool updatePackageList, bool restoreIndex)
 {
-	// int idx = updatePackageList || !restoreIndex ? -1 : mList->getCursorIndex();
 	mList->clear();
-
-	// std::unordered_set<std::string> repositories;
-	// for (auto& package : mPackages)
-	// {
-	// 	if (!mArchitecture.empty() && !package.arch.empty() && package.arch != "any" && package.arch != mArchitecture)
-	// 		continue;
-
-	// 	if (repositories.find(package.repository) == repositories.cend())
-	// 		repositories.insert(package.repository);
-	// }
-
-	// if (repositories.size() > 0 && mTabs->size() == 0 && mTabFilter.empty())
-	// {
 		std::vector<std::string> gps;
-	// 	for (auto gp : repositories)
-			// gps.push_back(gp);
-			// gps.push_back("ALL");
-
 		std::sort(gps.begin(), gps.end());
 		for (auto group : gps)
 			mTabs->addTab(group);
 
 		mTabFilter = gps[0];
 
-		mTabs->setCursorChangedCallback([&](const CursorState& /*state*/)
-		{
-			if (mTabFilter != mTabs->getSelected())
-			{
+		mTabs->setCursorChangedCallback([&](const CursorState& /*state*/){
+			if (mTabFilter != mTabs->getSelected()){
 				mTabFilter = mTabs->getSelected();
 				mWindow->postToUiThread([this]() 
 				{ 
@@ -570,122 +470,19 @@ void GuiRomDownloader::loadList(bool updatePackageList, bool restoreIndex)
 				});
 			}
 		});
-	// }
-	
-	// std::string lastGroup = "-1**ce-fakegroup-c";
-
 	int i = 0;
-	// for (auto package : mPackages)
-	// {
-	// 	if (!mArchitecture.empty() && !package.arch.empty() && package.arch != "any" && package.arch != mArchitecture)
-	// 		continue;
-
-	// 	if (!mTabFilter.empty() && package.repository != mTabFilter)				
-	// 		continue;		
-
-	// 	if (!mTextFilter.empty() && !Utils::String::containsIgnoreCase(package.name, mTextFilter))
-	// 		continue;
-
-	// 	if (lastGroup != package.group)
-	// 		mList->addGroup(package.group, false);
-
-	// 	lastGroup = package.group;
-
-	// 	ComponentListRow row;
-
-	// 	auto grid = std::make_shared<ROMEntry>(mWindow, package);
-	// 	row.addElement(grid, true);
-
-	// 	if (!grid->isInstallPending())
-	// 		row.makeAcceptInputHandler([this, package] { processPackage(package); });
-
-	// 	mList->addRow(row, i == idx, false);
-	// 	i++;
-	// }
-
-	// if (i == 0)
-	// {
-		// auto theme = ThemeData::getMenuTheme();
-		// ComponentListRow row;
-		// row.selectable = false;
-		// auto text = std::make_shared<TextComponent>(mWindow, _("No items"), theme->TextSmall.font, theme->Text.color, ALIGN_CENTER);
-		// row.addElement(text, true);
-		// mList->addRow(row, false, false);
-	// }
-
-	// ComponentListRow row;
-	// ROMPackage package;
-
-	// package.id = "tetris.zip";
-	// package.system = "snes";
-	// package.info = "Tetris Attack 1,8Mb";
-	// package.status = "new";
-
-	// auto grid = std::make_shared<ROMEntry>(mWindow, package);
-	// row.addElement(grid, true);
-	// if (!grid->isInstallPending())
-	// 	row.makeAcceptInputHandler([this, package] { processPackage(package); });
-	// mList->addRow(row, false, false);
-
 	centerWindow();
-
 	mReloadList = 0;
 }
 
 std::vector<ROMPackage> GuiRomDownloader::queryPackages()
 {
-	// auto systemNames = SystemData::getKnownSystemNames();
-	// auto packages = ApiSystem::getInstance()->getBatoceraStorePackages();
-
 	std::vector<ROMPackage> copy;
-	// for (auto& package : packages)
-	// {
-	// 	if (package.group.empty())
-	// 		package.group = _("MISC");
-	// 	else
-	// 	{
-	// 		if (Utils::String::startsWith(package.group, "sys-"))
-	// 		{
-	// 			auto sysName = package.group.substr(4);
-
-	// 			auto itSys = systemNames.find(sysName);
-	// 			if (itSys == systemNames.cend())
-	// 				continue;
-
-	// 			package.group = Utils::String::toUpper(itSys->second);
-	// 		}
-	// 		else
-	// 			package.group = _(Utils::String::toUpper(package.group).c_str());
-	// 	}
-
-	// 	copy.push_back(package);
-	// }
-
-	// std::sort(copy.begin(), copy.end(), sortPackagesByGroup);
 	return copy;
 }
 
 void GuiRomDownloader::loadPackagesAsync(bool updatePackageList, bool refreshOnly)
 {
-	// Window* window = mWindow;
-
-	// mWindow->pushGui(new GuiLoading<std::vector<ROMPackage>>(mWindow, _("PLEASE WAIT"),
-	// 	[this,  updatePackageList, refreshOnly](auto gui)
-	// 	{	
-	// 		if (updatePackageList)
-	// 			if (refreshOnly)
-	// 				ApiSystem::getInstance()->refreshBatoceraStorePackageList();
-	// 			else
-	// 				ApiSystem::getInstance()->updateBatoceraStorePackageList();
-
-	// 		return queryPackages();
-	// 	},
-	// 	[this, updatePackageList](std::vector<ROMPackage> packages)
-	// 	{		
-	// 		mPackages = packages;
-	// 		loadList(updatePackageList);
-	// 	}
-	// 	));
 }
 
 void GuiRomDownloader::processPackage(ROMPackage package)
@@ -694,7 +491,6 @@ void GuiRomDownloader::processPackage(ROMPackage package)
 		return;
 
 	std::string url, filename, rom_data;
-	//url = Utils::String::format(SystemConf::getInstance()->get("rom_downloader.url." + package.system).c_str(), package.name.c_str());
 	url = package.url;
 	filename = getDestinationPath(package.system, package.name);
 	rom_data = filename;
@@ -758,31 +554,11 @@ bool GuiRomDownloader::input(InputConfig* config, Input input)
 		return true;
 	}
 
-	// if (config->isMappedTo("y", input) && input.value != 0)
-	// {
-	// 	showSearch();
-	// 	return true;
-	// }
-
 	if (mTabs->input(config, input))
 		return true;
 
 	return false;
 }
-
-// void GuiRomDownloader::showSearch()
-// {
-	// auto updateVal = [this](const std::string& newVal)
-	// {
-	// 	mTextFilter = newVal;
-	// 	mReloadList = 3;
-	// };
-
-	// if (Settings::getInstance()->getBool("UseOSK"))
-	// 	mWindow->pushGui(new GuiTextEditPopupKeyboard(mWindow, _("SEARCH"), mTextFilter, updateVal, false));
-	// else
-	// 	mWindow->pushGui(new GuiTextEditPopup(mWindow, _("SEARCH"), mTextFilter, updateVal, false));
-// }
 
 std::vector<HelpPrompt> GuiRomDownloader::getHelpPrompts()
 {
@@ -804,10 +580,7 @@ ROMEntry::ROMEntry(Window* window, ROMPackage& entry) :
 	auto theme = ThemeData::getMenuTheme();
 
 	bool isInstalled = entry.isInstalled();
-
-	// mIsPending = ContentInstaller::IsInQueue(ContentInstaller::CONTENT_STORE_INSTALL, entry.name) || ContentInstaller::IsInQueue(ContentInstaller::CONTENT_STORE_UNINSTALL, entry.name);
 	mIsPending = false;
-
 	mImage = std::make_shared<TextComponent>(mWindow);
 	mImage->setColor(theme->Text.color);
 	if (!isInstalled)
@@ -817,11 +590,9 @@ ROMEntry::ROMEntry(Window* window, ROMPackage& entry) :
 	mImage->setVerticalAlignment(Alignment::ALIGN_TOP);
 	mImage->setFont(theme->TextSmall.font);
 	//mImage->setText(isInstalled ? _U("\uF058") : _U("\uF019"));
-	mImage->setText(Utils::String::format("%s.\n%s", entry.no.c_str(),isInstalled ? _U("\uF058") : _U("\uF019")));
+	mImage->setText(Utils::String::format("%s %s.",isInstalled ? _U("\uF058") : _U("\uF019"),entry.no.c_str()));
 	mImage->setSize(theme->Text.font->getLetterHeight() * 1.5f, 0);
-
 	std::string label = entry.title;
-
 	mText = std::make_shared<TextComponent>(mWindow, label, theme->Text.font, theme->Text.color);
 	mText->setLineSpacing(1.5);
 	mText->setVerticalAlignment(ALIGN_TOP);
@@ -831,8 +602,8 @@ ROMEntry::ROMEntry(Window* window, ROMPackage& entry) :
 
 	if (mIsPending)
 	{
-		char trstring[1024];
-		snprintf(trstring, 1024, _("%s CURRENTLY IN DOWNLOAD QUEUE").c_str(), entry.name.c_str());
+		char trstring[MAX_LINE+1];
+		snprintf(trstring, MAX_LINE, _("%s CURRENTLY IN DOWNLOAD QUEUE").c_str(), entry.name.c_str());
 		details = trstring;
 	}
 
@@ -860,7 +631,6 @@ ROMEntry::ROMEntry(Window* window, ROMPackage& entry) :
 		mText->setOpacity(150);
 		mSubstring->setOpacity(120);		
 	}
-
 	setSize(Vector2f(0, h));
 }
 

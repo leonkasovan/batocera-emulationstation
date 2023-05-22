@@ -45,7 +45,7 @@ private:
 class GuiRomDownloader : public GuiComponent, IContentInstalledNotify
 {
 public:
-	GuiRomDownloader(Window* window, std::string last_search_name, std::vector<SystemData*> systems);
+	GuiRomDownloader(Window* window, std::string last_search_name, std::vector<std::string> systems);
 	~GuiRomDownloader();
 
 	bool input(InputConfig* config, Input input) override;
@@ -95,9 +95,9 @@ class GuiRomInstaller : public GuiSettings
 public:
 	GuiRomInstaller(Window* window);
 	~GuiRomInstaller();
-	bool isSupportedPlatform(SystemData* system);
+	bool isSupportedPlatform(std::string system);
 	void pressedStart();
-	std::shared_ptr<OptionListComponent<SystemData*>> mSystems;
+	std::shared_ptr<OptionListComponent<std::string>> mSystems;
 	std::shared_ptr<ComponentList>	mList;
 	std::string mSupportedSystems;
 };
