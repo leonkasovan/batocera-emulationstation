@@ -1,0 +1,6 @@
+sudo apt install libsdl2-dev:arm64 libsdl2-mixer-dev:arm64
+sudo apt install libfreetype-dev:arm64
+sudo apt install libfreeimage-dev:arm64 
+sudo apt install libcurl3-openssl-dev:arm64
+sudo apt install libvlc-dev:arm64
+sudo apt install librapidjason-dev:arm64

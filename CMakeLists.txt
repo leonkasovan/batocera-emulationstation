@@ -24,7 +24,7 @@ option(RPI "Set to ON to enable the Raspberry PI video player (omxplayer)" ${RPI
 option(CEC "CEC" OFF)
 option(BCM "BCM host" OFF)
 
-option(BATOCERA "Set to ON to enable BATOCERA specific code" OFF)
+option(BATOCERA "Set to ON to enable BATOCERA specific code" ON)
 option(RETROBAT "Set to ON to enable RETROBAT specific code" OFF)
 
 option(ENABLE_FILEMANAGER "Set to ON to enable f1 shortcut for filesystem" OFF)

@@ -110,7 +110,7 @@ std::vector<FileData*> loadGamelistFile(const std::string xmlpath, SystemData* s
 {	
 	std::vector<FileData*> ret;
 
-	LOG(LogInfo) << "Parsing XML file \"" << xmlpath << "\"...";
+	LOG(LogInfo) << "Parsing XML file \"" << xmlpath << "\"..." << system->getName();
 
 	pugi::xml_document doc;
 	pugi::xml_parse_result result = fromFile ? doc.load_file(xmlpath.c_str()) : doc.load_string(xmlpath.c_str());
@@ -288,6 +288,7 @@ bool saveToXml(FileData* file, const std::string& fileName, bool fullPaths)
 			LOG(LogError) << "Error saving metadata to \"" << fileName << "\" (for system " << system->getName() << ")!";
 			return false;
 		}
+		//LOG(LogError) << "Saving metadata to \"" << fileName << "\" (for system " << system->getName() << ")!";
 
 		return true;
 	}
