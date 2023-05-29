@@ -53,7 +53,8 @@ git submodule update --init
 
 To setup compilation, generate and build the Makefile with CMake:
 ```bash
-cmake -DGLES2=ON -DBATOCERA=1 -DSCREENSCRAPER_DEV_LOGIN="devid=jelos&devpassword=jelos" -DSCREENSCRAPER_SOFTNAME="MyBuildEmulationStation" .
+patch < fix_cmake.patch
+cmake .
 ```
 
 And then begin compilation:
