@@ -696,7 +696,7 @@ bool FileData::launchGame(Window* window, LaunchGameOptions options)
 		gameToUpdate->setMetadata(MetaDataId::LastPlayed, Utils::Time::DateTime(Utils::Time::now()));
 
 		//update meta-image from scrapped screenshot
-		if (gameToUpdate->getMetadata(MetaDataId::Image).empty()){
+		/*if (gameToUpdate->getMetadata(MetaDataId::Image).empty()){
 			std::string filename = gameToUpdate->getFileName();
 			std::size_t dotIndex = filename.find_last_of('.');
 			if (dotIndex != std::string::npos) {
@@ -705,7 +705,8 @@ bool FileData::launchGame(Window* window, LaunchGameOptions options)
 			}
 			// gameToUpdate->setMetadata(MetaDataId::Image, "./images/"+filename+"-image.png");	// fix: set with fullpath
 			gameToUpdate->setMetadata(MetaDataId::Image, "/userdata/roms/"+gameToUpdate->getSystemName()+"/images/"+filename+"-image.png");
-		}
+		}*/
+		// Kenapa di comment? Karena sudah otomatis terbaca oleh FindLocalArt
 
 		CollectionSystemManager::get()->refreshCollectionSystems(gameToUpdate);
 		saveToGamelistRecovery(gameToUpdate);
@@ -719,7 +720,7 @@ bool FileData::launchGame(Window* window, LaunchGameOptions options)
 		AudioManager::getInstance()->playRandomMusic();
 
 	if (exitCode >= 200 && exitCode <= 300)
-		window->pushGui(new GuiMsgBox(window, _("AN ERROR OCCURED") + ":\r\n" + getMessageFromExitCode(exitCode), _("OK"), nullptr, GuiMsgBoxIcon::ICON_ERROR));
+		window->pushGui(new GuiMsgBox(window, _("AN ERROR OCCURRED") + ":\r\n" + getMessageFromExitCode(exitCode), _("OK"), nullptr, GuiMsgBoxIcon::ICON_ERROR));
 
 	return exitCode == 0;
 }
@@ -1746,12 +1747,15 @@ std::string FileData::getProperty(const std::string& name)
 		if (seconds == 0)
 			return "";
 		
-		int h = 0, m = 0, s = 0;
+		int d = 0, h = 0, m = 0, s = 0;
+		d = seconds / 86400;
 		h = (seconds / 3600) % 24;
 		m = (seconds / 60) % 60;
 		s = seconds % 60;
-
-		if (h > 0)
+		
+		if (d > 0)
+			return Utils::String::format("%02d %02d:%02d:%02d", d, h, m, s);
+		else if (h > 0)
 			return Utils::String::format("%02d:%02d:%02d", h, m, s);
 
 		return Utils::String::format("%02d:%02d", m, s);		

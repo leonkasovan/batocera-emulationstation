@@ -46,3 +46,35 @@ GuiSystemInformation::GuiSystemInformation(Window* window) : GuiSettings(window,
 	for (auto info : Renderer::getDriverInformation())
 		addWithLabel(_(info.first.c_str()), std::make_shared<TextComponent>(window, info.second, font, color));
 }
+
+#define MAX_LINE 100
+
+GuiLogViewer::GuiLogViewer(Window* window) : GuiSettings(window, _("Log ES").c_str())
+{
+	auto theme = ThemeData::getMenuTheme();
+	std::shared_ptr<Font> font = theme->TextSmall.font;
+	unsigned int color = theme->Text.color;
+	FILE *f;
+	char lines[MAX_LINE][2000];
+    int lineCount = 0;
+
+	f = fopen("/userdata/system/configs/emulationstation/es_log.txt","r");
+	if (!f){
+		addWithLabel("Error open file /userdata/system/configs/emulationstation/es_log.txt", std::make_shared<TextComponent>(window, "", font, color));
+	}else{
+		while (fgets(lines[lineCount % MAX_LINE], 1999, f)){
+			lineCount++;
+		}
+
+		// Calculate the starting index in the circular buffer
+		int start = lineCount > MAX_LINE ? lineCount % MAX_LINE : 0;
+		int i, j;
+		// Print the lines starting from the calculated index
+		for (i = start; i < lineCount; i++) {
+			j = i % MAX_LINE;
+			strtok(lines[j], "\n"); //strip end-of-line
+			addWithLabel((char *)(lines[j]+20), std::make_shared<TextComponent>(window, "", font, color));
+		}
+		fclose(f);
+	}
+}

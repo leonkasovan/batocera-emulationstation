@@ -16,8 +16,6 @@ std::list<std::pair<int, std::string>>	ContentInstaller::mQueue;
 std::list<std::pair<int, std::string>>	ContentInstaller::mProcessingQueue;
 std::list<IContentInstalledNotify*>		ContentInstaller::mNotification;
 
-// void WriteLog(const char *data);
-
 void ContentInstaller::Enqueue(Window* window, ContentType type, const std::string contentName)
 {
 	std::unique_lock<std::mutex> lock(mLock);
@@ -201,7 +199,7 @@ void ContentInstaller::threadUpdate()
 			}
 			else
 			{
-				std::string error = _("AN ERROR OCCURED") + std::string(": ") + updateStatus.first;
+				std::string error = _("AN ERROR OCCURRED") + std::string(": ") + updateStatus.first;
 				mWindow->displayNotificationMessage(ICONINDEX + error);
 			}
 
@@ -220,7 +218,7 @@ void ContentInstaller::threadUpdate()
 			}
 			else
 			{
-				std::string error = _("AN ERROR OCCURED") + std::string(": ") + updateStatus.first;
+				std::string error = _("AN ERROR OCCURRED") + std::string(": ") + updateStatus.first;
 				mWindow->displayNotificationMessage(ICONINDEX + error);
 			}
 
@@ -239,7 +237,7 @@ void ContentInstaller::threadUpdate()
 			}
 			else
 			{
-				std::string error = _("AN ERROR OCCURED") + std::string(": ") + updateStatus.first;
+				std::string error = _("AN ERROR OCCURRED") + std::string(": ") + updateStatus.first;
 				mWindow->displayNotificationMessage(ICONINDEX + error);
 			}
 		}
@@ -257,7 +255,7 @@ void ContentInstaller::threadUpdate()
 			}
 			else
 			{
-				std::string error = _("AN ERROR OCCURED") + std::string(": ") + updateStatus.first;
+				std::string error = _("AN ERROR OCCURRED") + std::string(": ") + updateStatus.first;
 				mWindow->displayNotificationMessage(ICONINDEX + error);
 			}
 		}
@@ -275,7 +273,7 @@ void ContentInstaller::threadUpdate()
 			}
 			else
 			{
-				std::string error = _("AN ERROR OCCURED") + std::string(": ") + updateStatus.first;
+				std::string error = _("AN ERROR OCCURRED") + std::string(": ") + updateStatus.first;
 				mWindow->displayNotificationMessage(ICONINDEX + error);
 			}
 		}

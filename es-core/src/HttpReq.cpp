@@ -293,8 +293,8 @@ void HttpReq::performRequest(const std::string& url, HttpReqOptions* options)
 		onError(curl_multi_strerror(merr));
 		return;
 	}
+
 	s_requests[mHandle] = this;
-	// WriteLog("HttpReq::performRequest end");
 }
 
 void HttpReq::closeStream()
@@ -311,8 +311,10 @@ HttpReq::~HttpReq()
 {
 	// std::unique_lock<std::mutex> lock(mMutex);
 	closeStream();
+	
 	if (!mTempStreamPath.empty())
 		Utils::FileSystem::removeFile(mTempStreamPath);
+
 	if(mHandle)
 	{
 		s_requests.erase(mHandle);
@@ -355,6 +357,7 @@ HttpReq::Status HttpReq::status()
 					LOG(LogError) << "Cannot find easy handle!";
 					continue;
 				}
+
 				req->closeStream();
 
 				if (req->mStatus == REQ_FILESTREAM_ERROR)
@@ -436,6 +439,7 @@ HttpReq::Status HttpReq::status()
 			}
 		}
 	}
+
 	return mStatus;
 }
 
@@ -446,7 +450,6 @@ std::string HttpReq::getContent()
 
 	try
 	{
-		// WriteLog("HttpReq::getContent() 1");
 		closeStream();
 
 		if (!Utils::FileSystem::exists(mTempStreamPath))

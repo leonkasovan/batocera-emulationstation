@@ -618,7 +618,8 @@ private:
 			{
 				if(it->selected)
 				{
-					mText.setText(Utils::String::toUpper(it->name));
+					// mText.setText(Utils::String::toUpper(it->name));
+					mText.setText((it->name));
 					mText.setSize(0, mText.getSize().y());
 					setSize(mText.getSize().x() + mLeftArrow.getSize().x() + mRightArrow.getSize().x() + 24, mText.getSize().y());
 					onSizeChanged();

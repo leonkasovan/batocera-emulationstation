@@ -76,6 +76,8 @@ private:
 	void openNetworkSettings(bool selectWifiEnable = false);	
 	void openQuitMenu();
 	void openSystemInformations();
+	void openLogViewer();
+	void openRunExternal();
 	void openDeveloperSettings();
 	void openNetplaySettings(); 
 	void openRetroachievementsSettings();

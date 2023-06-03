@@ -350,13 +350,13 @@ std::pair<std::string, int> ApiSystem::scrape(BusyComponent* ui)
 bool ApiSystem::ping() 
 {
 	// ping Google, if it fails then move on, if succeeds exit loop and return "true"
-	if (!executeScript("timeout 1 ping -c 1 -t 1000 google.com"))
+	if (!executeScript("timeout 1 ping -c 1 -t 255 google.com"))
 	{
 		// ping Google DNS
-		if (!executeScript("timeout 1 ping -c 1 -t 1000 8.8.8.8"))
+		if (!executeScript("timeout 1 ping -c 1 -t 255 8.8.8.8"))
 		{
 			// ping Google secondary DNS & give 2 seconds, return this one's status
-			return executeScript("timeout 2 ping -c 1 -t 2000 8.8.4.4");
+			return executeScript("timeout 2 ping -c 1 -t 255 8.8.4.4");
 		}
 	}
 
@@ -1720,6 +1720,8 @@ std::vector<PacmanPackage> ApiSystem::getBatoceraStorePackages()
 				package.download_size = node.text().as_llong();
 			if (tag == "installed_size")
 				package.installed_size = node.text().as_llong();
+			if (tag == "preview_url")
+				package.preview_url = node.text().get();
 		}
 
 		if (!package.name.empty())
@@ -1955,4 +1957,9 @@ void ApiSystem::replugControllers_sindenguns() {
 void ApiSystem::replugControllers_wiimotes() {
   LOG(LogDebug) << "ApiSystem::replugControllers_wiimotes";
   executeScript("/usr/bin/virtual-wii-mouse-bar-remap");
+}
+
+void ApiSystem::replugControllers_steamdeckguns() {
+  LOG(LogDebug) << "ApiSystem::replugControllers_steamdeckguns";
+  executeScript("/usr/bin/steamdeckgun-remap");
 }

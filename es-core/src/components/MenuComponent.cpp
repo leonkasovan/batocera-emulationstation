@@ -139,7 +139,8 @@ void MenuComponent::addWithLabel(const std::string& label, const std::shared_ptr
 
 	addMenuIcon(mWindow, row, iconName);
 
-	auto text = std::make_shared<TextComponent>(mWindow, Utils::String::toUpper(label), theme->Text.font, theme->Text.color);
+	//auto text = std::make_shared<TextComponent>(mWindow, Utils::String::toUpper(label), theme->Text.font, theme->Text.color);
+	auto text = std::make_shared<TextComponent>(mWindow, label, theme->Text.font, theme->Text.color);
 	row.addElement(text, true);
 
 	if (EsLocale::isRTL())

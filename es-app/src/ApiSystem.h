@@ -61,6 +61,8 @@ struct PacmanPackage
 	size_t download_size;
 	size_t installed_size;
 
+	std::string preview_url;
+
 	std::string group;
 	std::vector<std::string> licenses;	
 
@@ -253,6 +255,7 @@ public:
 
   	virtual void replugControllers_sindenguns();
     	virtual void replugControllers_wiimotes();
+    	virtual void replugControllers_steamdeckguns();
 	
 protected:
 	ApiSystem();

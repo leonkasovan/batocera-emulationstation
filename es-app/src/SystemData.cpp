@@ -1617,7 +1617,7 @@ bool SystemData::isCheevosSupported()
 				"atarilynx", "lynx", "ngp", "gamegear", "pokemini", "atari2600", "fbneo", "fbn", "virtualboy", "pcfx", "tg16", "famicom", "msx1",
 				"psx", "sg-1000", "sg1000", "coleco", "colecovision", "atari7800", "wonderswan", "pc88", "saturn", "3do", "apple2", "neogeo", "arcade", "mame",
 				"nds", "arcade", "megadrive-japan", "pcenginecd", "supergrafx", "supervision", "snes-msu1", "amstradcpc",
-				"dreamcast", "psp", "jaguar", "intellivision", "vectrex", "megaduck", "arduboy", "wasm4" };
+				"dreamcast", "psp", "jaguar", "intellivision", "vectrex", "megaduck", "arduboy", "wasm4", "ps2" };
 
 			if (cheevosSystems.find(getName()) != cheevosSystems.cend())
 				mIsCheevosSupported = 1;
@@ -2045,13 +2045,16 @@ std::string SystemData::getProperty(const std::string& name)
 	{
 		auto seconds = info->playTime;
 
-		int h = 0, m = 0, s = 0;
+		int d = 0, h = 0, m = 0, s = 0;
+		d = seconds / 86400;
 		h = (seconds / 3600) % 24;
 		m = (seconds / 60) % 60;
 		s = seconds % 60;
 
 		std::string timeText;
-		if (h > 0)
+		if (d > 0)
+			timeText = Utils::String::format("%02d:%02d:%02d:%02d", d, h, m, s);
+		else if (h > 0)
 			timeText = Utils::String::format("%02d:%02d:%02d", h, m, s);
 		else
 			timeText = Utils::String::format("%02d:%02d", m, s);

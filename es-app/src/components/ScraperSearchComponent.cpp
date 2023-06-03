@@ -41,7 +41,6 @@ ScraperSearchComponent::ScraperSearchComponent(Window* window, SearchType type) 
 	mResultName = std::make_shared<TextComponent>(mWindow, "Result name", theme->Text.font, theme->Text.color);
 
 	// selected result thumbnail
-	LOG(LogDebug) << "44 es-app/src/components/ScraperSearchComponent.cpp";
 	mResultThumbnail = std::make_shared<WebImageComponent>(mWindow, 86400); // 24 hours
 	mResultThumbnail->setAllowFading(false);	
 	mResultThumbnail->setOnImageLoaded([this]() { mGrid.onSizeChanged(); });
@@ -49,7 +48,6 @@ ScraperSearchComponent::ScraperSearchComponent(Window* window, SearchType type) 
 	mGrid.setEntry(mResultThumbnail, Vector2i(1, 1), false, false);
 
 	// selected result desc + container
-	LOG(LogDebug) << "52 es-app/src/components/ScraperSearchComponent.cpp";
 	mResultDesc = std::make_shared<TextComponent>(mWindow, "Result desc", theme->TextSmall.font, theme->Text.color);	
 	mResultDesc->setVerticalAlignment(Alignment::ALIGN_TOP);
 	mResultDesc->setAutoScroll(TextComponent::AutoScrollType::VERTICAL);
@@ -256,7 +254,8 @@ void ScraperSearchComponent::search(const ScraperSearchParams& params)
 			ScraperSearch* ss = new ScraperSearch();
 			ss->name = scraperName;
 			ss->params = params;
-			ss->searchHandle = scraper->search(params);
+			ss->params.isManualScrape = true;
+			ss->searchHandle = scraper->search(ss->params);
 			mScrapEngines.push_back(ss);
 		}
 	}
@@ -394,7 +393,7 @@ void ScraperSearchComponent::onSearchError(const std::string& error)
 {
 	LOG(LogInfo) << "ScraperSearchComponent search error: " << error;
 
-	mWindow->pushGui(new GuiMsgBox(mWindow, _("AN ERROR OCCURED") + ":\n" + Utils::String::toUpper(error),
+	mWindow->pushGui(new GuiMsgBox(mWindow, _("AN ERROR OCCURRED") + ":\n" + Utils::String::toUpper(error),
 		_("RETRY"), std::bind(&ScraperSearchComponent::search, this, mInitialSearch),
 		_("SKIP"), mSkipCallback,
 		_("CANCEL"), mCancelCallback, ICON_ERROR)); 
