@@ -57,6 +57,11 @@ patch < fix_cmake.patch
 cmake .
 ```
 
+To add new source code  
+```
+nano batocera-emulationstation-edit\es-app\CMakeLists.txt
+```
+
 And then begin compilation:
 ```bash
 make
