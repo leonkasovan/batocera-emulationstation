@@ -7,6 +7,7 @@
 #include <utility>
 #include "HttpReq.h"
 #include "Paths.h"
+#include "utils/ZipFile.h"
 
 #define ICONINDEX _U("\uF019 ")
 
@@ -161,6 +162,62 @@ std::pair<std::string, int> ContentInstaller::uninstallBatoceraRomPackage(std::s
 	}
 }
 
+// name: "/userdata/roms/ports/avp.zip|https://github.com/PortsMaster/PortMaster-Releases/releases/latest/download/avp.zip"
+std::pair<std::string, int> ContentInstaller::installBatoceraPortPackage(std::string name){
+	char filename[1024];
+	char url[1024];
+	const char *src;
+	char *dst;
+
+	src = name.c_str();
+	dst = filename;
+	while(*src && *src != '|'){
+		*dst++ = *src++;
+	}
+	*dst = 0;
+
+	if (*src != '|'){
+		return std::pair<std::string, int>("INVALID FORMAT INPUT. MISSING SEPARATOR", -1);
+	}
+
+	src++;
+	dst = url;
+	while(*src){
+		*dst++ = *src++;
+	}
+	*dst = 0;
+
+	HttpReq httpreq(url, filename);
+	int curPos = -1;
+	while (httpreq.status() == HttpReq::REQ_IN_PROGRESS)
+	{
+		double pos = httpreq.getPosition();
+		if (pos > 0 && curPos != pos)
+		{
+			mWndNotification->updateText(Utils::String::format("%d%%", httpreq.getPercent()));
+			mWndNotification->updatePercent(httpreq.getPercent());
+			curPos = pos;
+		}
+	}
+
+	if (httpreq.status() == HttpReq::REQ_SUCCESS){
+		if (ApiSystem::getInstance()->unzipFile(filename, "/userdata/roms/ports"))
+			return std::pair<std::string, int>(_("Download and install PORT success"),0);
+		else
+			return std::pair<std::string, int>(_("Download success but installing PORT failed"),-1);
+	}else
+		return std::pair<std::string, int>(_("Download and install PORT failed"),-1);
+}
+
+// name: "/userdata/roms/ports/avp.zip"
+std::pair<std::string, int> ContentInstaller::uninstallBatoceraPortPackage(std::string name){
+	if (Utils::FileSystem::removeFile(name)){
+		return std::pair<std::string, int>("Removing PORT success", 0);
+	}else{
+		return std::pair<std::string, int>("Removing PORT failed", -1);
+	}
+}
+
 void ContentInstaller::threadUpdate()
 {
 	mCurrent = 0;
@@ -294,7 +351,8 @@ void ContentInstaller::threadUpdate()
 				std::string error = _("AN ERROR OCCURED") + std::string(": ") + updateStatus.first;
 				mWindow->displayNotificationMessage(ICONINDEX + error);
 			}
-		}else if (data.first == ContentType::CONTENT_ROM_INSTALL)
+		}
+		else if (data.first == ContentType::CONTENT_ROM_INSTALL)
 		{
 			updateStatus = installBatoceraRomPackage(data.second);
 
@@ -317,6 +375,36 @@ void ContentInstaller::threadUpdate()
 			{
 				success = true;
 				mWindow->displayNotificationMessage(ICONINDEX + data.second + " : " + _("ROM REMOVED SUCCESSFULLY"));
+			}
+			else
+			{
+				std::string error = _("AN ERROR OCCURED") + std::string(": ") + updateStatus.first;
+				mWindow->displayNotificationMessage(ICONINDEX + error);
+			}
+		}
+		else if (data.first == ContentType::CONTENT_PORT_INSTALL)
+		{
+			updateStatus = installBatoceraPortPackage(data.second);
+
+			if (updateStatus.second == 0)
+			{
+				success = true;
+				mWindow->displayNotificationMessage(ICONINDEX + updateStatus.first);
+			}
+			else
+			{
+				std::string error = _("AN ERROR OCCURED") + std::string(": ") + updateStatus.first;
+				mWindow->displayNotificationMessage(ICONINDEX + error);
+			}
+		}
+		else if (data.first == ContentType::CONTENT_PORT_UNINSTALL)
+		{
+			updateStatus = uninstallBatoceraPortPackage(data.second);
+
+			if (updateStatus.second == 0)
+			{
+				success = true;
+				mWindow->displayNotificationMessage(ICONINDEX + data.second + " : " + _("PORT REMOVED SUCCESSFULLY"));
 			}
 			else
 			{

@@ -21,6 +21,7 @@
 #include "guis/GuiSystemInformation.h"
 #include "guis/GuiScraperSettings.h"
 #include "guis/GuiRomInstaller.h"
+#include "guis/GuiPortInstaller.h"
 #include "guis/GuiRunExternal.h"
 #include "views/UIModeController.h"
 #include "views/ViewController.h"
@@ -834,13 +835,22 @@ void GuiMenu::openUpdatesSettings()
 
 	updateGui->addGroup(_("DOWNLOADS"));
 
-	// Themes installer/browser
+	// Roms installer/browser
 	updateGui->addEntry(_("ROMS DOWNLOADER"), true, [this]
 	{
 		if (!checkNetwork())
 			return;
 
 		mWindow->pushGui(new GuiRomInstaller(mWindow));
+	});
+
+	// Roms installer/browser
+	updateGui->addEntry(_("PORTS DOWNLOADER"), true, [this]
+	{
+		if (!checkNetwork())
+			return;
+
+		mWindow->pushGui(new GuiPortDownloader(mWindow));
 	});
 
 	if (ApiSystem::getInstance()->isScriptingSupported(ApiSystem::BATOCERASTORE))

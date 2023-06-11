@@ -181,6 +181,8 @@ set(ES_SOURCES
 	${CMAKE_CURRENT_SOURCE_DIR}/src/guis/GuiFileBrowser.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/guis/GuiRomInstaller.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/guis/GuiRunExternal.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/guis/GuiPortInstaller.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/guis/GuiLibInstaller.cpp
 
     # Scrapers
     ${CMAKE_CURRENT_SOURCE_DIR}/src/scrapers/Scraper.cpp

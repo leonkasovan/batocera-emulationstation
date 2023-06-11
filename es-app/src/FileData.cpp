@@ -696,17 +696,15 @@ bool FileData::launchGame(Window* window, LaunchGameOptions options)
 		gameToUpdate->setMetadata(MetaDataId::LastPlayed, Utils::Time::DateTime(Utils::Time::now()));
 
 		//update meta-image from scrapped screenshot
-		/*if (gameToUpdate->getMetadata(MetaDataId::Image).empty()){
+		if (gameToUpdate->getMetadata(MetaDataId::Image).empty()){
 			std::string filename = gameToUpdate->getFileName();
 			std::size_t dotIndex = filename.find_last_of('.');
 			if (dotIndex != std::string::npos) {
 				// Remove the extension by erasing the characters starting from the dot position
 				filename.erase(dotIndex);
 			}
-			// gameToUpdate->setMetadata(MetaDataId::Image, "./images/"+filename+"-image.png");	// fix: set with fullpath
 			gameToUpdate->setMetadata(MetaDataId::Image, "/userdata/roms/"+gameToUpdate->getSystemName()+"/images/"+filename+"-image.png");
-		}*/
-		// Kenapa di comment? Karena sudah otomatis terbaca oleh FindLocalArt
+		}
 
 		CollectionSystemManager::get()->refreshCollectionSystems(gameToUpdate);
 		saveToGamelistRecovery(gameToUpdate);

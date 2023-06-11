@@ -1,4 +1,4 @@
-#include "GuiRomInstaller.h"
+#include "GuiLibInstaller.h"
 #include "PlatformId.h"
 #include "SystemConf.h"
 #include "components/OptionListComponent.h"
@@ -21,7 +21,7 @@
 #include <sys/stat.h>
 #include <dirent.h>
 
-using namespace PlatformIds;
+/*using namespace PlatformIds;
 
 void WriteLog(const char *data){
 	auto logPath = Paths::getUserEmulationStationPath() + "/my_log.txt";
@@ -94,11 +94,11 @@ std::string getDestinationPath(std::string system, std::string name){
 	return dest;
 }
 
-bool GuiRomInstaller::isSupportedPlatform(std::string system){
+bool GuiLibInstaller::isSupportedPlatform(std::string system){
 	return (mSupportedSystems.find(","+system+",") != std::string::npos);
 }
 
-GuiRomInstaller::GuiRomInstaller(Window* window) : GuiSettings(window, _("ROMS DOWNLOAD").c_str())
+GuiLibInstaller::GuiLibInstaller(Window* window) : GuiSettings(window, _("ROMS DOWNLOAD").c_str())
 {
 	auto theme = ThemeData::getMenuTheme();
 	std::shared_ptr<Font> font = theme->Text.font;
@@ -128,7 +128,7 @@ GuiRomInstaller::GuiRomInstaller(Window* window) : GuiSettings(window, _("ROMS D
 	addWithLabel(_("SYSTEMS INCLUDED"), mSystems);
 
 	mMenu.clearButtons();
-	mMenu.addButton(_("SEARCH"), _("START"), std::bind(&GuiRomInstaller::pressedStart, this));
+	mMenu.addButton(_("SEARCH"), _("START"), std::bind(&GuiLibInstaller::pressedStart, this));
 	mMenu.addButton(_("BACK"), _("go back"), [this] { close(); });
 	if (Renderer::isSmallScreen())
 		mMenu.setPosition((Renderer::getScreenWidth() - mMenu.getSize().x()) / 2, (Renderer::getScreenHeight() - mMenu.getSize().y()) / 2);
@@ -136,12 +136,12 @@ GuiRomInstaller::GuiRomInstaller(Window* window) : GuiSettings(window, _("ROMS D
 		mMenu.setPosition((mSize.x() - mMenu.getSize().x()) / 2, Renderer::getScreenHeight() * 0.15f);
 }
 
-GuiRomInstaller::~GuiRomInstaller()
+GuiLibInstaller::~GuiLibInstaller()
 {
 	ViewController::reloadAllGames(mWindow, false);
 }
 
-void GuiRomInstaller::pressedStart()
+void GuiLibInstaller::pressedStart()
 {
 	std::string last_search_name = SystemConf::getInstance()->get("rom_downloader.last_search_name");
 	std::vector<std::string> systems = mSystems->getSelectedObjects();
@@ -461,7 +461,7 @@ void GuiRomDownloader::loadList(bool updatePackageList, bool restoreIndex)
 
 		mTabFilter = gps[0];
 
-		mTabs->setCursorChangedCallback([&](const CursorState& /*state*/){
+		mTabs->setCursorChangedCallback([&](const CursorState&){
 			if (mTabFilter != mTabs->getSelected()){
 				mTabFilter = mTabs->getSelected();
 				mWindow->postToUiThread([this]() 
@@ -614,7 +614,7 @@ ROMEntry::ROMEntry(Window* window, ROMPackage& entry) :
 	setEntry(mText, Vector2i(2, 0), false, true);
 	setEntry(mSubstring, Vector2i(2, 1), false, true);
 
-	float h = mText->getSize().y() * 1.1f + mSubstring->getSize().y()/* + mDetails->getSize().y()*/;
+	float h = mText->getSize().y() * 1.1f + mSubstring->getSize().y();
 	float sw = WINDOW_WIDTH;
 
 	setColWidthPerc(0, 50.0f / sw, false);
@@ -640,3 +640,5 @@ void ROMEntry::setColor(unsigned int color)
 	mText->setColor(color);
 	mSubstring->setColor(color);
 }
+
+*/

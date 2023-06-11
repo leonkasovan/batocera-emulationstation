@@ -96,8 +96,11 @@ protected:
 	// Network info
 	void updateNetworkInfo();
 	std::shared_ptr<TextureResource> mNetworkImage;
+	std::shared_ptr<Font>			 mNetworkFont;
+	std::shared_ptr<TextCache>		 mNetworkText;
 	bool mNetworkConnected;
 	int mNetworkCheckTime;
+	int mNetworkTextX;
 
 protected:
 	// Battery info

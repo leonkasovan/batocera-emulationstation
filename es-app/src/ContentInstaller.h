@@ -28,6 +28,8 @@ public:
 		CONTENT_STORE_UNINSTALL = 5,
 		CONTENT_ROM_INSTALL = 6,
 		CONTENT_ROM_UNINSTALL = 7,
+		CONTENT_PORT_INSTALL = 8,
+		CONTENT_PORT_UNINSTALL = 9,
 	};
 
 	static void Enqueue(Window* window, ContentType type, const std::string contentName);
@@ -42,6 +44,8 @@ private: // Methods
 	void updateNotificationComponentContent(const std::string info);
 	std::pair<std::string, int> installBatoceraRomPackage(std::string name);
 	std::pair<std::string, int> uninstallBatoceraRomPackage(std::string name);
+	std::pair<std::string, int> installBatoceraPortPackage(std::string name);
+	std::pair<std::string, int> uninstallBatoceraPortPackage(std::string name);
 
 	void threadUpdate();
 

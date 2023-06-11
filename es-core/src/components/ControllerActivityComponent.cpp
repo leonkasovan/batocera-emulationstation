@@ -24,6 +24,10 @@ void ControllerActivityComponent::init()
 	mBatteryText = nullptr;
 	mBatteryTextX = -999;
 
+	mNetworkFont = nullptr;
+	mNetworkText = nullptr;
+	mNetworkTextX = -999;
+
 	mView = CONTROLLERS;
 	
 	mBatteryInfo = BatteryInformation();
@@ -177,6 +181,7 @@ void ControllerActivityComponent::render(const Transform4x4f& parentTrans)
 	float szH = mSize.y();
 
 	int itemsWidth = 0;
+	float networkTextOffset = 0;
 	float batteryTextOffset = 0;
 
 	bool showControllerActivity = Settings::ShowControllerActivity();
@@ -234,8 +239,16 @@ void ControllerActivityComponent::render(const Transform4x4f& parentTrans)
 			itemsWidth += szW + mSpacing;
 	}
 
-	if ((mView & NETWORK) && mNetworkConnected && mNetworkImage != nullptr)
+	auto networkText = queryIPAdress()+" ";
+	if ((mView & NETWORK) && mNetworkConnected && mNetworkImage != nullptr){
 		itemsWidth += szW + mSpacing; // getTextureSize(mNetworkImage).x()
+		if (mNetworkFont == nullptr)
+			mNetworkFont = Font::get(szH * (Renderer::isSmallScreen() ? 0.55f : 0.70f), FONT_PATH_REGULAR);
+
+		auto sz = mNetworkFont->sizeText(networkText, 1.0);
+		itemsWidth += sz.x() + mSpacing;
+		networkTextOffset = mSize.y() / 2.0f - sz.y() / 2.0f;
+	}
 
 	auto batteryText = std::to_string(mBatteryInfo.level) + "%";
 	
@@ -312,8 +325,21 @@ void ControllerActivityComponent::render(const Transform4x4f& parentTrans)
 		}
 	}
 	
-	if ((mView & NETWORK) && mNetworkConnected && mNetworkImage != nullptr)
+	if ((mView & NETWORK) && mNetworkConnected && mNetworkImage != nullptr){
 		x += renderTexture(x, szW, mNetworkImage, mColorShift);
+
+		if (mNetworkFont != nullptr)
+		{
+			if (mNetworkText == nullptr || mNetworkTextX != x)
+			{
+				mNetworkTextX = x;
+				mNetworkText = std::unique_ptr<TextCache>(mNetworkFont->buildTextCache(networkText, Vector2f(x, networkTextOffset), mColorShift, mSize.x(), Alignment::ALIGN_LEFT, 1.0f));
+			}
+
+			mNetworkFont->renderTextCache(mNetworkText.get());
+			x += mNetworkFont->sizeText(networkText, 1.0).x() + mSpacing;
+		}
+	}
 
 	if ((mView & BATTERY) && mBatteryInfo.hasBattery && mBatteryImage != nullptr)
 	{
