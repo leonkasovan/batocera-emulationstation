@@ -63,6 +63,7 @@ GuiRunExternal::GuiRunExternal(Window* window) : GuiSettings(window, _("Run Exte
 	addWithLabel(_("ARGUMENT"), argumentList);
 	mMenu.clearButtons();
 	mMenu.addButton(_("RUN"), _("Run"), std::bind(&GuiRunExternal::runExternal, this));
+    mMenu.addButton(_("LOG"), _("Log"), std::bind(&GuiRunExternal::viewLog, this));
 	mMenu.addButton(_("BACK"), _("go back"), [this] { close(); });
 }
 
@@ -125,4 +126,17 @@ int GuiRunExternal::runExternal()
 	AudioManager::getInstance()->init();
 	mWindow->normalizeNextUpdate();
     return rc;
+}
+
+int GuiRunExternal::viewLog(){
+    std::string err,log;
+
+    GuiSettings* msgBox = new GuiSettings(mWindow, "View Log");
+    err = Utils::FileSystem::readAllText("/userdata/roms/bin/err.txt");
+    log = Utils::FileSystem::readAllText("/userdata/roms/bin/log.txt");
+	msgBox->setSubTitle("\nERROR:\n"+err+"\nLOG:\n"+log);
+	//msgBox->setSubTitle("Ini akan sangat panjang sekali\nIni akan sangat panjang sekali\nIni akan sangat panjang sekali\nIni akan sangat panjang sekali\nIni akan sangat panjang sekali\n");
+    msgBox->setTag("Tag");
+    mWindow->pushGui(msgBox);
+    return 0;
 }

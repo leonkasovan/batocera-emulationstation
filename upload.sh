@@ -1,6 +1,6 @@
 #!/bin/bash
 aarch64-linux-gnu-strip -s emulationstation
-sftp root@192.168.1.10 <<EOF
+sftp root@192.168.1.8 <<EOF
 put emulationstation
 put portmaster.db
 cd /userdata/system/scripts
