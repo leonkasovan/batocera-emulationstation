@@ -154,9 +154,9 @@ GuiMenu::GuiMenu(Window *window, bool animate) : GuiComponent(window), mMenu(win
 #if BATOCERA
 		addEntry(_("GAME SETTINGS").c_str(), true, [this] { openGamesSettings(); }, "iconGames");
 		// addEntry(controllers_settings_label.c_str(), true, [this] { openControllersSettings(); }, "iconControllers");
-		// addEntry(_("USER INTERFACE SETTINGS").c_str(), true, [this] { openUISettings(); }, "iconUI");
-		// addEntry(_("GAME COLLECTION SETTINGS").c_str(), true, [this] { openCollectionSystemSettings(); }, "iconAdvanced");
-		addEntry(_("SOUND SETTINGS").c_str(), true, [this] { openSoundSettings(); }, "iconSound");
+		addEntry(_("USER INTERFACE SETTINGS").c_str(), true, [this] { openUISettings(); }, "iconUI");
+		addEntry(_("GAME COLLECTION SETTINGS").c_str(), true, [this] { openCollectionSystemSettings(); }, "iconAdvanced");
+		// addEntry(_("SOUND SETTINGS").c_str(), true, [this] { openSoundSettings(); }, "iconSound");
 
 		if (ApiSystem::getInstance()->isScriptingSupported(ApiSystem::WIFI))
 			addEntry(_("NETWORK SETTINGS").c_str(), true, [this] { openNetworkSettings(); }, "iconNetwork");
@@ -3599,6 +3599,13 @@ void GuiMenu::openQuitMenu_static(Window *window, bool quickAccessMenu, bool ani
 			}
 		}
 
+		s->addEntry(_("FILE MANAGER"), false, [s, window]
+		{
+			window->deinit(true);
+			system("cd /usr/share/FileManager && ./EnhancedFileManager");
+			window->init(true);
+		}, "iconScraper");
+
 		s->addEntry(_("LAUNCH SCREENSAVER"), false, [s, window]
 		{
 			Window* w = window;
@@ -3624,20 +3631,20 @@ void GuiMenu::openQuitMenu_static(Window *window, bool quickAccessMenu, bool ani
 	if (quickAccessMenu)
 		s->addGroup(_("QUIT"));
 
-	s->addEntry(_("RESTART SYSTEM"), false, [window] {
-		window->pushGui(new GuiMsgBox(window, _("REALLY RESTART?"), 
-			_("YES"), [] { quitES(QuitMode::REBOOT); }, 
-			_("NO"), nullptr));
-	}, "iconRestart");
+	// s->addEntry(_("RESTART SYSTEM"), false, [window] {
+	// 	window->pushGui(new GuiMsgBox(window, _("REALLY RESTART?"), 
+	// 		_("YES"), [] { quitES(QuitMode::REBOOT); }, 
+	// 		_("NO"), nullptr));
+	// }, "iconRestart");
 
-	if (ApiSystem::getInstance()->isScriptingSupported(ApiSystem::SUSPEND))
-	{
-		s->addEntry(_("SUSPEND SYSTEM"), false, [window, s] {
-			window->pushGui(new GuiMsgBox(window, _("REALLY SUSPEND ?"),
-				_("YES"), [s] { s->close(); ApiSystem::getInstance()->suspend(); },
-				_("NO"), nullptr));
-		}, "iconFastShutdown");
-	}
+	// if (ApiSystem::getInstance()->isScriptingSupported(ApiSystem::SUSPEND))
+	// {
+	// 	s->addEntry(_("SUSPEND SYSTEM"), false, [window, s] {
+	// 		window->pushGui(new GuiMsgBox(window, _("REALLY SUSPEND ?"),
+	// 			_("YES"), [s] { s->close(); ApiSystem::getInstance()->suspend(); },
+	// 			_("NO"), nullptr));
+	// 	}, "iconFastShutdown");
+	// }
 
 	s->addEntry(_("SHUTDOWN SYSTEM"), false, [window] {
 		window->pushGui(new GuiMsgBox(window, _("REALLY SHUTDOWN?"), 
@@ -3645,11 +3652,17 @@ void GuiMenu::openQuitMenu_static(Window *window, bool quickAccessMenu, bool ani
 			_("NO"), nullptr));
 	}, "iconShutdown");
 
-	s->addWithDescription(_("FAST SHUTDOWN SYSTEM"), _("Shutdown without saving metadata."), nullptr, [window] {
-		window->pushGui(new GuiMsgBox(window, _("REALLY SHUTDOWN WITHOUT SAVING METADATA?"), 
-			_("YES"), [] { quitES(QuitMode::FAST_SHUTDOWN); },
+	// s->addWithDescription(_("FAST SHUTDOWN SYSTEM"), _("Shutdown without saving metadata."), nullptr, [window] {
+	// 	window->pushGui(new GuiMsgBox(window, _("REALLY SHUTDOWN WITHOUT SAVING METADATA?"), 
+	// 		_("YES"), [] { quitES(QuitMode::FAST_SHUTDOWN); },
+	// 		_("NO"), nullptr));
+	// }, "iconFastShutdown");
+
+	s->addEntry(_("QUIT EMULATIONSTATION"), false, [window] {
+		window->pushGui(new GuiMsgBox(window, _("REALLY QUIT?"), 
+			_("YES"), [] { quitES(QuitMode::QUIT); }, 
 			_("NO"), nullptr));
-	}, "iconFastShutdown");
+	}, "iconQuit");
 
 #ifdef WIN32
 	if (Settings::getInstance()->getBool("ShowExit"))
