@@ -187,10 +187,8 @@ void GuiPortDownloader::loadList()
 	int idx = mList->getCursorIndex();
 	mList->clear();
 
-	//std::string db_path = SystemConf::getInstance()->get("port_downloader.db.path");
-	std::string db_path = "/userdata/system/portmaster.db";
-	//std::string db_path = SystemConf::getInstance()->get("port_downloader.new.db.path");
-	std::string new_db_path = "/userdata/system/new-portmaster.db";
+	std::string db_path = SystemConf::getInstance()->get("port_downloader.db.path");
+	std::string new_db_path = SystemConf::getInstance()->get("port_downloader.new.db.path");
 	size_t n_port = 0;
 	PortPackage package;
 	FILE *f;
