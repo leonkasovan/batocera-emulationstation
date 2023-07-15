@@ -111,16 +111,16 @@ GuiPortDownloader::GuiPortDownloader(Window* window)
 	ContentInstaller::RegisterNotify(this);
 
 	// check PortMaster version
-	if (Utils::FileSystem::exists(LOCAL_VERSION)){
-		std::string localVersion = Utils::FileSystem::readAllText(LOCAL_VERSION);
-		if (ApiSystem::getInstance()->downloadFile(ONLINE_VERSION, _(LOCAL_VERSION)+"-online", "check version", nullptr)){
-			std::string onlineVersion = Utils::FileSystem::readAllText(_(LOCAL_VERSION)+"-online");
-			if (onlineVersion != localVersion){
-				mWindow->displayNotificationMessage(_U("\uF019 ") + Utils::String::format("Start updating PortMaster %s to %s ", localVersion.c_str(), onlineVersion.c_str()));
-				ContentInstaller::Enqueue(mWindow, ContentInstaller::CONTENT_PORT_INSTALL, "/userdata/roms/ports/PortMaster.zip|https://github.com/PortsMaster/PortMaster-Releases/releases/latest/download/PortMaster.zip");
-			}
-		}
-	}
+	// if (Utils::FileSystem::exists(LOCAL_VERSION)){
+	// 	std::string localVersion = Utils::FileSystem::readAllText(LOCAL_VERSION);
+	// 	if (ApiSystem::getInstance()->downloadFile(ONLINE_VERSION, _(LOCAL_VERSION)+"-online", "check version", nullptr)){
+	// 		std::string onlineVersion = Utils::FileSystem::readAllText(_(LOCAL_VERSION)+"-online");
+	// 		if (onlineVersion != localVersion){
+	// 			mWindow->displayNotificationMessage(_U("\uF019 ") + Utils::String::format("Start updating PortMaster %s to %s ", localVersion.c_str(), onlineVersion.c_str()));
+	// 			ContentInstaller::Enqueue(mWindow, ContentInstaller::CONTENT_PORT_INSTALL, "/userdata/roms/ports/PortMaster.zip|https://github.com/PortsMaster/PortMaster-Releases/releases/latest/download/PortMaster.zip");
+	// 		}
+	// 	}
+	// }
 }
 
 GuiPortDownloader::~GuiPortDownloader()
@@ -183,8 +183,8 @@ void GuiPortDownloader::loadList()
 	int idx = mList->getCursorIndex();
 	mList->clear();
 
-	//std::string db_path = SystemConf::getInstance()->get("rom_downloader.db.path");
-	std::string db_path = "/userdata/system/portmaster.db";
+	std::string db_path = SystemConf::getInstance()->get("port_downloader.db.path");
+	// std::string db_path = "/userdata/system/portmaster.db";
 	size_t n_port = 0;
 	PortPackage package;
 	FILE *f;

@@ -1,8 +1,10 @@
 #!/bin/bash
 aarch64-linux-gnu-strip -s emulationstation
-sftp root@192.168.1.14 <<EOF
+sftp root@192.168.1.18 <<EOF
+cd /userdata/roms/bin
 put emulationstation
-put portmaster.db
-cd /userdata/system/scripts
-put screenshot_auto_scrapper.sh
 EOF
+#cd /userdata/system/scripts
+#put screenshot_auto_scrapper.sh
+#cd /userdata/roms/bin/es
+#put portmaster.db

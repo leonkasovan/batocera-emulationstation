@@ -414,6 +414,11 @@ void GuiMenu::openLogViewer()
 	mWindow->pushGui(new GuiLogViewer(mWindow));
 }
 
+void GuiMenu::openPathsInfo()
+{
+	mWindow->pushGui(new GuiPathsInfo(mWindow));
+}
+
 void GuiMenu::openRunExternal()
 {
 	mWindow->pushGui(new GuiRunExternal(mWindow));
@@ -959,6 +964,9 @@ void GuiMenu::openSystemSettings()
 
 	// System informations
 	s->addEntry(_("INFORMATION"), true, [this] { openSystemInformations(); });
+
+	// View Paths
+	s->addEntry(_("PATHS INFORMATION"), true, [this] { openPathsInfo(); });
 
 	// View ES Log File, max 200 line
 	s->addEntry(_("VIEW LOG ES"), true, [this] { openLogViewer(); });
@@ -3602,7 +3610,7 @@ void GuiMenu::openQuitMenu_static(Window *window, bool quickAccessMenu, bool ani
 		s->addEntry(_("FILE MANAGER"), false, [s, window]
 		{
 			window->deinit(true);
-			system("cd /usr/share/FileManager && ./EnhancedFileManager");
+			system(SystemConf::getInstance()->get("run.filemanager.path").c_str());
 			window->init(true);
 		}, "iconScraper");
 
@@ -3631,11 +3639,11 @@ void GuiMenu::openQuitMenu_static(Window *window, bool quickAccessMenu, bool ani
 	if (quickAccessMenu)
 		s->addGroup(_("QUIT"));
 
-	// s->addEntry(_("RESTART SYSTEM"), false, [window] {
-	// 	window->pushGui(new GuiMsgBox(window, _("REALLY RESTART?"), 
-	// 		_("YES"), [] { quitES(QuitMode::REBOOT); }, 
-	// 		_("NO"), nullptr));
-	// }, "iconRestart");
+	s->addEntry(_("RESTART SYSTEM"), false, [window] {
+		window->pushGui(new GuiMsgBox(window, _("REALLY RESTART?"), 
+			_("YES"), [] { quitES(QuitMode::REBOOT); }, 
+			_("NO"), nullptr));
+	}, "iconRestart");
 
 	// if (ApiSystem::getInstance()->isScriptingSupported(ApiSystem::SUSPEND))
 	// {
