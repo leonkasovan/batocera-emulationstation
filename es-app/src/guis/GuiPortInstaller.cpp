@@ -76,7 +76,8 @@ GuiPortDownloader::GuiPortDownloader(Window* window)
 	mTabs = std::make_shared<ComponentTab>(mWindow);
 	mTabs->addTab("Ready to Run");
 	mTabs->addTab("Mono Required");
-	mTabs->addTab("Original Game Data Required");
+	mTabs->addTab("OrgData Required");
+	mTabs->addTab("New");
 
 	mTabs->setCursorChangedCallback([&](const CursorState&)
 	{
@@ -97,6 +98,9 @@ GuiPortDownloader::GuiPortDownloader(Window* window)
 
 	// Buttons
 	std::vector< std::shared_ptr<ButtonComponent> > buttons;
+	buttons.push_back(std::make_shared<ButtonComponent>(mWindow, _("UPDATE"), _("UPDATE"), [this] { 
+		system("luaxx /userdata/roms/bin/es/gen_db_from_port_master.lua");
+	}));
 	buttons.push_back(std::make_shared<ButtonComponent>(mWindow, _("BACK"), _("BACK"), [this] { delete this; }));
 	mButtonGrid = makeButtonGrid(mWindow, buttons);
 	mGrid.setEntry(mButtonGrid, Vector2i(0, 3), true, false);
@@ -183,8 +187,10 @@ void GuiPortDownloader::loadList()
 	int idx = mList->getCursorIndex();
 	mList->clear();
 
-	//std::string db_path = SystemConf::getInstance()->get("rom_downloader.db.path");
+	//std::string db_path = SystemConf::getInstance()->get("port_downloader.db.path");
 	std::string db_path = "/userdata/system/portmaster.db";
+	//std::string db_path = SystemConf::getInstance()->get("port_downloader.new.db.path");
+	std::string new_db_path = "/userdata/system/new-portmaster.db";
 	size_t n_port = 0;
 	PortPackage package;
 	FILE *f;
@@ -192,42 +198,70 @@ void GuiPortDownloader::loadList()
 	char *tokens[MAXTOKEN];
     int ntoken;
 
-	// mTabFilter: global var for filtering list based on selected tab (index=0[Ready to run] index=1[Need mono] index=2[Need data original game])
-	if ((f = fopen(db_path.c_str(), "r")) == NULL) {
-		mWindow->pushGui(new GuiMsgBox(mWindow, Utils::String::format("Error opendir for path %s", db_path.c_str())));
-	}else{
-		while (fgets(line, MAXLENGTH, f)) {
-			line[strcspn(line, "\n")] = '\0'; // Remove newline character if present
-			if (line[0] != '\0'){
-				ntoken = parseLine(line, tokens);
-				if (ntoken == MAXTOKEN){
-					if (mTabFilter == 0){
-						if (strcmp(tokens[0], "rtr")) continue;
-					}else if (mTabFilter == 1){
-						if (strcmp(tokens[0], "mon")) continue;
-					}else if (mTabFilter == 2){
-						if (strcmp(tokens[0], "ext")) continue;
+	if (mTabFilter == 3){
+		if ((f = fopen(new_db_path.c_str(), "r")) != NULL) {
+			while (fgets(line, MAXLENGTH, f)) {
+				line[strcspn(line, "\n")] = '\0'; // Remove newline character if present
+				if (line[0] != '\0'){
+					ntoken = parseLine(line, tokens);
+					if (ntoken == MAXTOKEN){
+						package.no = n_port + 1;
+						package.type = tokens[0];
+						package.title = tokens[1];
+						package.desc = tokens[2];
+						package.filename = tokens[3];
+						package.size = tokens[4];
+						package.genre = tokens[5];
+						package.status = "";
+						auto grid = std::make_shared<PortEntry>(mWindow, package);
+						ComponentListRow row;
+						row.addElement(grid, true);
+						row.makeAcceptInputHandler([this, package] { processPackage(package); });
+						mList->addRow(row, idx == n_port);
+						n_port++;
 					}
-					package.no = n_port + 1;
-					package.type = tokens[0];
-					package.title = tokens[1];
-					package.desc = tokens[2];
-					package.filename = tokens[3];
-					package.size = tokens[4];
-					package.genre = tokens[5];
-					package.status = "";
-					auto grid = std::make_shared<PortEntry>(mWindow, package);
-					ComponentListRow row;
-					row.addElement(grid, true);
-					row.makeAcceptInputHandler([this, package] { processPackage(package); });
-					mList->addRow(row, idx == n_port);
-					n_port++;
 				}
 			}
-		}	
-		fclose(f);
+			fclose(f);
+		}
+	}else{
+		// mTabFilter: global var for filtering list based on selected tab (0[Ready to run] 1[Need mono] 2[Need data original game] 3[New])
+		if ((f = fopen(db_path.c_str(), "r")) == NULL) {
+			mWindow->pushGui(new GuiMsgBox(mWindow, Utils::String::format("Error opendir for path %s", db_path.c_str())));
+		}else{
+			while (fgets(line, MAXLENGTH, f)) {
+				line[strcspn(line, "\n")] = '\0'; // Remove newline character if present
+				if (line[0] != '\0'){
+					ntoken = parseLine(line, tokens);
+					if (ntoken == MAXTOKEN){
+						if (mTabFilter == 0){
+							if (strcmp(tokens[0], "rtr")) continue;
+						}else if (mTabFilter == 1){
+							if (strcmp(tokens[0], "mon")) continue;
+						}else if (mTabFilter == 2){
+							if (strcmp(tokens[0], "ext")) continue;
+						}
+						package.no = n_port + 1;
+						package.type = tokens[0];
+						package.title = tokens[1];
+						package.desc = tokens[2];
+						package.filename = tokens[3];
+						package.size = tokens[4];
+						package.genre = tokens[5];
+						package.status = "";
+						auto grid = std::make_shared<PortEntry>(mWindow, package);
+						ComponentListRow row;
+						row.addElement(grid, true);
+						row.makeAcceptInputHandler([this, package] { processPackage(package); });
+						mList->addRow(row, idx == n_port);
+						n_port++;
+					}
+				}
+			}	
+			fclose(f);
+		}
 	}
-
+	
 	if (n_port == 0){
 		auto theme = ThemeData::getMenuTheme();
 		ComponentListRow row;

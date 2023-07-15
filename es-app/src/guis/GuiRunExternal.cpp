@@ -48,7 +48,7 @@ GuiRunExternal::GuiRunExternal(Window* window) : GuiSettings(window, _("Run Exte
 		entry = readdir(dir);
 		do {
 			snprintf(fullpath, 2047, "%s/%s", run_external_path.c_str(), entry->d_name);
-			if (strstr(entry->d_name, ".txt")) {
+			if (strstr(entry->d_name, ".arg")) {
 				argumentList->add(entry->d_name, fullpath, false);
 			}else if(isExecutable(fullpath)){
 				programList->add(entry->d_name, fullpath, false);
