@@ -3,6 +3,7 @@
 #include "components/SwitchComponent.h"
 #include "ThemeData.h"
 #include "ApiSystem.h"
+#include "Paths.h"
 #include "views/UIModeController.h"
 
 GuiSystemInformation::GuiSystemInformation(Window* window) : GuiSettings(window, _("INFORMATION").c_str())
@@ -77,4 +78,41 @@ GuiLogViewer::GuiLogViewer(Window* window) : GuiSettings(window, _("Log ES").c_s
 		}
 		fclose(f);
 	}
+}
+
+GuiPathsInfo::GuiPathsInfo(Window* window) : GuiSettings(window, _("Paths Info").c_str())
+{
+	auto theme = ThemeData::getMenuTheme();
+	std::shared_ptr<Font> font = theme->Text.font;
+	unsigned int color = theme->Text.color;
+
+	addGroup(_("SYSTEM PATH:"));
+	addWithDescription("Root Path", Paths::getRootPath(),std::make_shared<TextComponent>(window, "", font, color));
+	addWithDescription("System Conf File Path", Paths::getSystemConfFilePath(),std::make_shared<TextComponent>(window, "", font, color));
+	addWithDescription("Log Path", Paths::getLogPath(),std::make_shared<TextComponent>(window, "", font, color));
+	addWithDescription("ScreenShot Path", Paths::getScreenShotPath(),std::make_shared<TextComponent>(window, "", font, color));
+	addWithDescription("Saves Path", Paths::getSavesPath(),std::make_shared<TextComponent>(window, "", font, color));
+	addWithDescription("Music Path", Paths::getMusicPath(),std::make_shared<TextComponent>(window, "", font, color));
+	addWithDescription("Themes Path", Paths::getThemesPath(),std::make_shared<TextComponent>(window, "", font, color));
+	addWithDescription("Keyboard Mappings Path", Paths::getKeyboardMappingsPath(),std::make_shared<TextComponent>(window, "", font, color));
+	addWithDescription("Decorations Path", Paths::getDecorationsPath(),std::make_shared<TextComponent>(window, "", font, color));
+	addWithDescription("Shaders Path", Paths::getShadersPath(),std::make_shared<TextComponent>(window, "", font, color));
+	addWithDescription("Retroachivement Sounds", Paths::getRetroachivementSounds(),std::make_shared<TextComponent>(window, "", font, color));
+	addWithDescription("EmulationStation Path", Paths::getEmulationStationPath(),std::make_shared<TextComponent>(window, "", font, color));
+	addWithDescription("TimeZones Path", Paths::getTimeZonesPath(),std::make_shared<TextComponent>(window, "", font, color));
+	addWithDescription("Version Info Path", Paths::getVersionInfoPath(),std::make_shared<TextComponent>(window, "", font, color));
+	addWithDescription("User Manual Path", Paths::getUserManualPath(),std::make_shared<TextComponent>(window, "", font, color));
+	addWithDescription("Home Path", Paths::getHomePath(),std::make_shared<TextComponent>(window, "", font, color));
+	addWithDescription("Exe Path", Paths::getExePath(),std::make_shared<TextComponent>(window, "", font, color));
+
+	addGroup(_("USER PATH:"));
+	addWithDescription("User Music Path", Paths::getUserMusicPath(), std::make_shared<TextComponent>(window, "", font, color));
+	addWithDescription("User Themes Path", Paths::getUserThemesPath(), std::make_shared<TextComponent>(window, "", font, color));
+	addWithDescription("User Keyboard Mappings Path", Paths::getUserKeyboardMappingsPath(), std::make_shared<TextComponent>(window, "", font, color));
+	addWithDescription("User Decorations Path", Paths::getUserDecorationsPath(), std::make_shared<TextComponent>(window, "", font, color));
+	addWithDescription("User Shaders Path", Paths::getUserShadersPath(), std::make_shared<TextComponent>(window, "", font, color));
+	addWithDescription("User Retroachivement Sounds", Paths::getUserRetroachivementSounds(), std::make_shared<TextComponent>(window, "", font, color));
+	addWithDescription("User EmulationStation Path", Paths::getUserEmulationStationPath(), std::make_shared<TextComponent>(window, "", font, color));
+	addWithDescription("User EmulationStation Setting Path", Paths::getUserEmulationStationPath() + "/es_settings.cfg", std::make_shared<TextComponent>(window, "", font, color));
+	addWithDescription("User EmulationStation Script Path", Paths::getUserEmulationStationPath() + "/script", std::make_shared<TextComponent>(window, "", font, color));
 }

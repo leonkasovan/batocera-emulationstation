@@ -177,7 +177,7 @@ void Settings::setDefaults()
 
 	mBoolMap["Debug"] = false;
 
-	mBoolMap["InvertButtons"] = false;
+	mBoolMap["InvertButtons"] = true;
 
 	mBoolMap["GameOptionsAtNorth"] = false;
 	mBoolMap["LoadEmptySystems"] = false;

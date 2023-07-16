@@ -98,8 +98,24 @@ GuiPortDownloader::GuiPortDownloader(Window* window)
 
 	// Buttons
 	std::vector< std::shared_ptr<ButtonComponent> > buttons;
-	buttons.push_back(std::make_shared<ButtonComponent>(mWindow, _("UPDATE"), _("UPDATE"), [this] { 
-		system("luaxx /userdata/roms/bin/es/gen_db_from_port_master.lua");
+	buttons.push_back(std::make_shared<ButtonComponent>(mWindow, _("UPDATE"), _("UPDATE"), [this] {
+		// check PortMaster version
+		if (Utils::FileSystem::exists(LOCAL_VERSION)){
+			std::string localVersion = Utils::FileSystem::readAllText(LOCAL_VERSION);
+			if (ApiSystem::getInstance()->downloadFile(ONLINE_VERSION, _(LOCAL_VERSION)+"-online", "check version", nullptr)){
+				std::string onlineVersion = Utils::FileSystem::readAllText(_(LOCAL_VERSION)+"-online");
+				if (onlineVersion != localVersion){
+					mWindow->displayNotificationMessage(_U("\uF019 ") + Utils::String::format("Start updating PortMaster %s to %s ", localVersion.c_str(), onlineVersion.c_str()));
+					ContentInstaller::Enqueue(mWindow, ContentInstaller::CONTENT_PORT_INSTALL, "/userdata/roms/ports/PortMaster.zip|https://github.com/PortsMaster/PortMaster-Releases/releases/latest/download/PortMaster.zip");
+				}
+			}
+		}
+		if (Utils::FileSystem::exists("/userdata/roms/bin/es/gen_db_from_port_master.lua")){
+			system("luaxx /userdata/roms/bin/es/gen_db_from_port_master.lua");
+		}else{
+			mWindow->displayNotificationMessage("Script gen_db_from_port_master.lua is missing.\nRun ");
+		}
+		
 	}));
 	buttons.push_back(std::make_shared<ButtonComponent>(mWindow, _("BACK"), _("BACK"), [this] { delete this; }));
 	mButtonGrid = makeButtonGrid(mWindow, buttons);
@@ -115,16 +131,16 @@ GuiPortDownloader::GuiPortDownloader(Window* window)
 	ContentInstaller::RegisterNotify(this);
 
 	// check PortMaster version
-	if (Utils::FileSystem::exists(LOCAL_VERSION)){
-		std::string localVersion = Utils::FileSystem::readAllText(LOCAL_VERSION);
-		if (ApiSystem::getInstance()->downloadFile(ONLINE_VERSION, _(LOCAL_VERSION)+"-online", "check version", nullptr)){
-			std::string onlineVersion = Utils::FileSystem::readAllText(_(LOCAL_VERSION)+"-online");
-			if (onlineVersion != localVersion){
-				mWindow->displayNotificationMessage(_U("\uF019 ") + Utils::String::format("Start updating PortMaster %s to %s ", localVersion.c_str(), onlineVersion.c_str()));
-				ContentInstaller::Enqueue(mWindow, ContentInstaller::CONTENT_PORT_INSTALL, "/userdata/roms/ports/PortMaster.zip|https://github.com/PortsMaster/PortMaster-Releases/releases/latest/download/PortMaster.zip");
-			}
-		}
-	}
+	// if (Utils::FileSystem::exists(LOCAL_VERSION)){
+	// 	std::string localVersion = Utils::FileSystem::readAllText(LOCAL_VERSION);
+	// 	if (ApiSystem::getInstance()->downloadFile(ONLINE_VERSION, _(LOCAL_VERSION)+"-online", "check version", nullptr)){
+	// 		std::string onlineVersion = Utils::FileSystem::readAllText(_(LOCAL_VERSION)+"-online");
+	// 		if (onlineVersion != localVersion){
+	// 			mWindow->displayNotificationMessage(_U("\uF019 ") + Utils::String::format("Start updating PortMaster %s to %s ", localVersion.c_str(), onlineVersion.c_str()));
+	// 			ContentInstaller::Enqueue(mWindow, ContentInstaller::CONTENT_PORT_INSTALL, "/userdata/roms/ports/PortMaster.zip|https://github.com/PortsMaster/PortMaster-Releases/releases/latest/download/PortMaster.zip");
+	// 		}
+	// 	}
+	// }
 }
 
 GuiPortDownloader::~GuiPortDownloader()
@@ -196,7 +212,7 @@ void GuiPortDownloader::loadList()
 	char *tokens[MAXTOKEN];
     int ntoken;
 
-	if (mTabFilter == 3){
+	if (mTabFilter == 3){ // 3[New Port]
 		if ((f = fopen(new_db_path.c_str(), "r")) != NULL) {
 			while (fgets(line, MAXLENGTH, f)) {
 				line[strcspn(line, "\n")] = '\0'; // Remove newline character if present
@@ -223,7 +239,7 @@ void GuiPortDownloader::loadList()
 			fclose(f);
 		}
 	}else{
-		// mTabFilter: global var for filtering list based on selected tab (0[Ready to run] 1[Need mono] 2[Need data original game] 3[New])
+		// mTabFilter: global var for filtering list based on selected tab (0[Ready to run] 1[Need mono] 2[Need data original game])
 		if ((f = fopen(db_path.c_str(), "r")) == NULL) {
 			mWindow->pushGui(new GuiMsgBox(mWindow, Utils::String::format("Error opendir for path %s", db_path.c_str())));
 		}else{

@@ -3,6 +3,7 @@
 #include "VolumeControl.h"
 #include "components/OptionListComponent.h"
 #include "CLog.hpp"
+#include "SystemConf.h"
 #include <sys/stat.h>
 #include <dirent.h>
 #include <fstream>
@@ -24,10 +25,10 @@ bool isExecutable(const char* filename) {
     }
 }
 
-#define BIN_DIR "/userdata/roms/bin"
+// #define BIN_DIR "/userdata/roms/bin"
 
-// Run any file that have x mode in specific folder "/userdata/roms/bin"
-// With defined argument in /userdata/roms/bin/*.txt
+// Run any file that have x mode in specific folder "/userdata/roms/bin/"
+// With defined argument in /userdata/roms/bin/*.arg
 GuiRunExternal::GuiRunExternal(Window* window) : GuiSettings(window, _("Run External").c_str())
 {
 	auto theme = ThemeData::getMenuTheme();
@@ -42,12 +43,12 @@ GuiRunExternal::GuiRunExternal(Window* window) : GuiSettings(window, _("Run Exte
 	char fullpath[2048];
 	struct dirent *entry;
     std::string cmd;
-	//std::string run_external_path = SystemConf::getInstance()->get("run.external.path");
-	std::string run_external_path = BIN_DIR;
+	std::string run_external_path = SystemConf::getInstance()->get("run.external.path");
+	// std::string run_external_path = BIN_DIR;
 	if ( (dir = opendir(run_external_path.c_str())) ) {
 		entry = readdir(dir);
 		do {
-			snprintf(fullpath, 2047, "%s/%s", run_external_path.c_str(), entry->d_name);
+			snprintf(fullpath, 2047, "%s%s", run_external_path.c_str(), entry->d_name);
 			if (strstr(entry->d_name, ".arg")) {
 				argumentList->add(entry->d_name, fullpath, false);
 			}else if(isExecutable(fullpath)){
@@ -58,7 +59,7 @@ GuiRunExternal::GuiRunExternal(Window* window) : GuiSettings(window, _("Run Exte
         argumentList->selectFirstItem();    // must be selected one!!
         programList->selectFirstItem();     // must be selected one!!
 	}
-
+    setSubTitle("Execute any executable from path:\n"+run_external_path);
 	addWithLabel(_("RUN PROGRAM"), programList);
 	addWithLabel(_("ARGUMENT"), argumentList);
 	mMenu.clearButtons();
@@ -110,7 +111,7 @@ int GuiRunExternal::runExternal()
         }
     }
     cwd = Utils::FileSystem::getCWDPath();
-    chdir(BIN_DIR);
+    chdir(SystemConf::getInstance()->get("run.external.path").c_str());
     cmd = Utils::String::format("%s %s",programList->getSelected().c_str(),args);
     rc =  system(cmd.c_str());
     free(args);
@@ -130,10 +131,11 @@ int GuiRunExternal::runExternal()
 
 int GuiRunExternal::viewLog(){
     std::string err,log;
+    std::string run_external_path = SystemConf::getInstance()->get("run.external.path");
 
     GuiSettings* msgBox = new GuiSettings(mWindow, "View Log");
-    err = Utils::FileSystem::readAllText("/userdata/roms/bin/err.txt");
-    log = Utils::FileSystem::readAllText("/userdata/roms/bin/log.txt");
+    err = Utils::FileSystem::readAllText(run_external_path + "err.txt");
+    log = Utils::FileSystem::readAllText(run_external_path + "log.txt");
 	msgBox->setSubTitle("\nERROR:\n"+err+"\nLOG:\n"+log);
 	//msgBox->setSubTitle("Ini akan sangat panjang sekali\nIni akan sangat panjang sekali\nIni akan sangat panjang sekali\nIni akan sangat panjang sekali\nIni akan sangat panjang sekali\n");
     msgBox->setTag("Tag");

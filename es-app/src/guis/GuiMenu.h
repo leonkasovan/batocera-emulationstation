@@ -77,6 +77,7 @@ private:
 	void openQuitMenu();
 	void openSystemInformations();
 	void openLogViewer();
+	void openPathsInfo();
 	void openRunExternal();
 	void openDeveloperSettings();
 	void openNetplaySettings(); 

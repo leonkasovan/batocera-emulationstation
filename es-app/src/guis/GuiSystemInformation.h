@@ -15,3 +15,9 @@ class GuiLogViewer : public GuiSettings
 public:
 	GuiLogViewer(Window* window);
 };
+
+class GuiPathsInfo : public GuiSettings
+{
+public:
+	GuiPathsInfo(Window* window);
+};
