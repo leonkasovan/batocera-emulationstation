@@ -9,7 +9,3 @@ put emulationstation
 cd /userdata/system/scripts
 put screenshot_auto_scrapper.sh
 EOF
-#cd /userdata/system/scripts
-#put screenshot_auto_scrapper.sh
-#cd /userdata/roms/bin/es
-#put portmaster.db

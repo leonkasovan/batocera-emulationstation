@@ -119,9 +119,6 @@ end
 fo2:close()
 fo:close()
 
-print("Latest port total data: ", counter_data)
-print("New port: ", counter_new)
-
 if os.info() == "Linux" then
 	-- copy portmaster.db to timestamp
 	os.execute('cp -f '..DB_PATH..' '..data_timestamp..'-portmaster.db')
@@ -141,4 +138,5 @@ else
 	end
 end
 if fileExists('ports.md') then os.remove('ports.md') end
--- os.execute('pause')
+
+print(string.format("New ports: %d from total %s\n", counter_new, counter_data))

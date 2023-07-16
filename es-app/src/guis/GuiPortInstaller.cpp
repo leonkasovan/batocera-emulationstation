@@ -76,7 +76,7 @@ GuiPortDownloader::GuiPortDownloader(Window* window)
 	mTabs = std::make_shared<ComponentTab>(mWindow);
 	mTabs->addTab("Ready to Run");
 	mTabs->addTab("Mono Required");
-	mTabs->addTab("OrgData Required");
+	mTabs->addTab("Extra Data Required");
 	mTabs->addTab("New");
 
 	mTabs->setCursorChangedCallback([&](const CursorState&)
@@ -100,6 +100,7 @@ GuiPortDownloader::GuiPortDownloader(Window* window)
 	std::vector< std::shared_ptr<ButtonComponent> > buttons;
 	buttons.push_back(std::make_shared<ButtonComponent>(mWindow, _("UPDATE"), _("UPDATE"), [this] {
 		// check PortMaster version
+		// mWindow->displayNotificationMessage("Check PortMaster's update...");
 		if (Utils::FileSystem::exists(LOCAL_VERSION)){
 			std::string localVersion = Utils::FileSystem::readAllText(LOCAL_VERSION);
 			if (ApiSystem::getInstance()->downloadFile(ONLINE_VERSION, _(LOCAL_VERSION)+"-online", "check version", nullptr)){
@@ -110,10 +111,24 @@ GuiPortDownloader::GuiPortDownloader(Window* window)
 				}
 			}
 		}
+
+		// mWindow->displayNotificationMessage("Sync port database from online source. Please wait...");
 		if (Utils::FileSystem::exists("/userdata/roms/bin/es/gen_db_from_port_master.lua")){
-			system("luaxx /userdata/roms/bin/es/gen_db_from_port_master.lua");
+			FILE *pipe = popen("luaxx /userdata/roms/bin/es/gen_db_from_port_master.lua", "r");
+			if (pipe == NULL){
+				mWindow->displayNotificationMessage("Sync failed.");
+			}else{
+				char line[1024];
+				std::string msg = "";
+				while (fgets(line, 1024, pipe)){
+					//strtok(line, "\n");
+					msg += line;
+				}
+				pclose(pipe);
+				mWindow->displayNotificationMessage(msg);
+			}
 		}else{
-			mWindow->displayNotificationMessage("Script gen_db_from_port_master.lua is missing.\nRun ");
+			mWindow->displayNotificationMessage("Script gen_db_from_port_master.lua is missing.\nRun initial setup script");
 		}
 		
 	}));
@@ -129,18 +144,6 @@ GuiPortDownloader::GuiPortDownloader(Window* window)
 	});
 	centerWindow();
 	ContentInstaller::RegisterNotify(this);
-
-	// check PortMaster version
-	// if (Utils::FileSystem::exists(LOCAL_VERSION)){
-	// 	std::string localVersion = Utils::FileSystem::readAllText(LOCAL_VERSION);
-	// 	if (ApiSystem::getInstance()->downloadFile(ONLINE_VERSION, _(LOCAL_VERSION)+"-online", "check version", nullptr)){
-	// 		std::string onlineVersion = Utils::FileSystem::readAllText(_(LOCAL_VERSION)+"-online");
-	// 		if (onlineVersion != localVersion){
-	// 			mWindow->displayNotificationMessage(_U("\uF019 ") + Utils::String::format("Start updating PortMaster %s to %s ", localVersion.c_str(), onlineVersion.c_str()));
-	// 			ContentInstaller::Enqueue(mWindow, ContentInstaller::CONTENT_PORT_INSTALL, "/userdata/roms/ports/PortMaster.zip|https://github.com/PortsMaster/PortMaster-Releases/releases/latest/download/PortMaster.zip");
-	// 		}
-	// 	}
-	// }
 }
 
 GuiPortDownloader::~GuiPortDownloader()

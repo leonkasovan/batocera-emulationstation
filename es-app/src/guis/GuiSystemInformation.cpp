@@ -5,6 +5,7 @@
 #include "ApiSystem.h"
 #include "Paths.h"
 #include "views/UIModeController.h"
+#include "guis/GuiMsgBox.h"
 
 GuiSystemInformation::GuiSystemInformation(Window* window) : GuiSettings(window, _("INFORMATION").c_str())
 {
@@ -74,7 +75,9 @@ GuiLogViewer::GuiLogViewer(Window* window) : GuiSettings(window, _("Log ES").c_s
 		for (i = start; i < lineCount; i++) {
 			j = i % MAX_LINE;
 			strtok(lines[j], "\n"); //strip end-of-line
-			addWithLabel((char *)(lines[j]+20), std::make_shared<TextComponent>(window, "", font, color));
+			addEntry((char *)(lines[j]+20), false, [this, lines, j] {
+				mWindow->pushGui(new GuiMsgBox(mWindow, (char *)(lines[j]+20)));
+			});
 		}
 		fclose(f);
 	}

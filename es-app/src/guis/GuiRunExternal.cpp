@@ -8,6 +8,7 @@
 #include <dirent.h>
 #include <fstream>
 #include <unistd.h>
+#include "guis/GuiMsgBox.h"
 
 bool isExecutable(const char* filename) {
     struct stat fileStat;
@@ -129,16 +130,74 @@ int GuiRunExternal::runExternal()
     return rc;
 }
 
+#define MAX_LINE 100
 int GuiRunExternal::viewLog(){
+    FILE *f;
+	char lines[MAX_LINE][2000];
+    int lineCount = 0;
     std::string err,log;
     std::string run_external_path = SystemConf::getInstance()->get("run.external.path");
 
     GuiSettings* msgBox = new GuiSettings(mWindow, "View Log");
-    err = Utils::FileSystem::readAllText(run_external_path + "err.txt");
-    log = Utils::FileSystem::readAllText(run_external_path + "log.txt");
-	msgBox->setSubTitle("\nERROR:\n"+err+"\nLOG:\n"+log);
-	//msgBox->setSubTitle("Ini akan sangat panjang sekali\nIni akan sangat panjang sekali\nIni akan sangat panjang sekali\nIni akan sangat panjang sekali\nIni akan sangat panjang sekali\n");
-    msgBox->setTag("Tag");
+    // err = Utils::FileSystem::readAllText(run_external_path + "err.txt");
+    // log = Utils::FileSystem::readAllText(run_external_path + "log.txt");
+	// msgBox->setSubTitle("\nERROR:\n"+err+"\nLOG:\n"+log);
+    // msgBox->setTag("Tag");
+
+    msgBox->addGroup(_("LOG:"));
+    f = fopen((run_external_path + "log.txt").c_str(),"r");
+	if (!f){
+		msgBox->addEntry("Error open file log.txt");
+	}else{
+        lineCount = 0;
+		while (fgets(lines[lineCount % MAX_LINE], 1999, f)){
+			lineCount++;
+		}
+
+		// Calculate the starting index in the circular buffer
+		int start = lineCount > MAX_LINE ? lineCount % MAX_LINE : 0;
+		int i, j;
+		// Print the lines starting from the calculated index
+		for (i = start; i < lineCount; i++) {
+			j = i % MAX_LINE;
+			strtok(lines[j], "\n"); //strip end-of-line
+			msgBox->addEntry((char *)(lines[j]), false, [this, lines, j] {
+				mWindow->pushGui(new GuiMsgBox(mWindow, (char *)(lines[j])));
+			});
+		}
+		fclose(f);
+        if (!lineCount){
+		    msgBox->addEntry("Nothing.");
+	    }
+	}
+
+    msgBox->addGroup(_("ERROR:"));
+    f = fopen((run_external_path + "err.txt").c_str(),"r");
+	if (!f){
+		msgBox->addEntry("Error open file err.txt");
+	}else{
+        lineCount = 0;
+		while (fgets(lines[lineCount % MAX_LINE], 1999, f)){
+			lineCount++;
+		}
+
+		// Calculate the starting index in the circular buffer
+		int start = lineCount > MAX_LINE ? lineCount % MAX_LINE : 0;
+		int i, j;
+		// Print the lines starting from the calculated index
+		for (i = start; i < lineCount; i++) {
+			j = i % MAX_LINE;
+			strtok(lines[j], "\n"); //strip end-of-line
+			msgBox->addEntry((char *)(lines[j]), false, [this, lines, j] {
+				mWindow->pushGui(new GuiMsgBox(mWindow, (char *)(lines[j])));
+			});
+		}
+		fclose(f);
+
+        if (!lineCount){
+		    msgBox->addEntry("No error.");
+	    }
+	}
     mWindow->pushGui(msgBox);
     return 0;
 }
