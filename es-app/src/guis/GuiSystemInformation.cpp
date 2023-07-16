@@ -88,34 +88,149 @@ GuiPathsInfo::GuiPathsInfo(Window* window) : GuiSettings(window, _("Paths Info")
 	auto theme = ThemeData::getMenuTheme();
 	std::shared_ptr<Font> font = theme->Text.font;
 	unsigned int color = theme->Text.color;
+	std::string FileManagerPath = SystemConf::getInstance()->get("run.filemanager.path");
 
 	addGroup(_("SYSTEM PATH:"));
-	addWithDescription("Root Path", Paths::getRootPath(),std::make_shared<TextComponent>(window, "", font, color));
-	addWithDescription("System Conf File Path", Paths::getSystemConfFilePath(),std::make_shared<TextComponent>(window, "", font, color));
-	addWithDescription("Log Path", Paths::getLogPath(),std::make_shared<TextComponent>(window, "", font, color));
-	addWithDescription("ScreenShot Path", Paths::getScreenShotPath(),std::make_shared<TextComponent>(window, "", font, color));
-	addWithDescription("Saves Path", Paths::getSavesPath(),std::make_shared<TextComponent>(window, "", font, color));
-	addWithDescription("Music Path", Paths::getMusicPath(),std::make_shared<TextComponent>(window, "", font, color));
-	addWithDescription("Themes Path", Paths::getThemesPath(),std::make_shared<TextComponent>(window, "", font, color));
-	addWithDescription("Keyboard Mappings Path", Paths::getKeyboardMappingsPath(),std::make_shared<TextComponent>(window, "", font, color));
-	addWithDescription("Decorations Path", Paths::getDecorationsPath(),std::make_shared<TextComponent>(window, "", font, color));
-	addWithDescription("Shaders Path", Paths::getShadersPath(),std::make_shared<TextComponent>(window, "", font, color));
-	addWithDescription("Retroachivement Sounds", Paths::getRetroachivementSounds(),std::make_shared<TextComponent>(window, "", font, color));
-	addWithDescription("EmulationStation Path", Paths::getEmulationStationPath(),std::make_shared<TextComponent>(window, "", font, color));
-	addWithDescription("TimeZones Path", Paths::getTimeZonesPath(),std::make_shared<TextComponent>(window, "", font, color));
-	addWithDescription("Version Info Path", Paths::getVersionInfoPath(),std::make_shared<TextComponent>(window, "", font, color));
-	addWithDescription("User Manual Path", Paths::getUserManualPath(),std::make_shared<TextComponent>(window, "", font, color));
-	addWithDescription("Home Path", Paths::getHomePath(),std::make_shared<TextComponent>(window, "", font, color));
-	addWithDescription("Exe Path", Paths::getExePath(),std::make_shared<TextComponent>(window, "", font, color));
+	addWithDescription("Root Path", Paths::getRootPath(),std::make_shared<TextComponent>(window, "", font, color), [this, FileManagerPath] {
+		mWindow->deinit(false);
+		system((FileManagerPath+" "+Paths::getRootPath()).c_str());
+		mWindow->init(false);
+	});
+	addWithDescription("Log Path", Paths::getLogPath(),std::make_shared<TextComponent>(window, "", font, color), [this, FileManagerPath] {
+		mWindow->deinit(false);
+		system((FileManagerPath+" "+Paths::getLogPath()).c_str());
+		mWindow->init(false);
+	});
+	addWithDescription("ScreenShot Path", Paths::getScreenShotPath(),std::make_shared<TextComponent>(window, "", font, color), [this, FileManagerPath] {
+		mWindow->deinit(false);
+		system((FileManagerPath+" "+Paths::getScreenShotPath()).c_str());
+		mWindow->init(false);
+	});
+	addWithDescription("Saves Path", Paths::getSavesPath(),std::make_shared<TextComponent>(window, "", font, color), [this, FileManagerPath] {
+		mWindow->deinit(false);
+		system((FileManagerPath+" "+Paths::getSavesPath()).c_str());
+		mWindow->init(false);
+	});
+	addWithDescription("Music Path", Paths::getMusicPath(),std::make_shared<TextComponent>(window, "", font, color), [this, FileManagerPath] {
+		mWindow->deinit(false);
+		system((FileManagerPath+" "+Paths::getMusicPath()).c_str());
+		mWindow->init(false);
+	});
+	addWithDescription("Themes Path", Paths::getThemesPath(),std::make_shared<TextComponent>(window, "", font, color), [this, FileManagerPath] {
+		mWindow->deinit(false);
+		system((FileManagerPath+" "+Paths::getThemesPath()).c_str());
+		mWindow->init(false);
+	});
+	addWithDescription("Keyboard Mappings Path", Paths::getKeyboardMappingsPath(),std::make_shared<TextComponent>(window, "", font, color), [this, FileManagerPath] {
+		mWindow->deinit(false);
+		system((FileManagerPath+" "+Paths::getKeyboardMappingsPath()).c_str());
+		mWindow->init(false);
+	});
+	addWithDescription("Decorations Path", Paths::getDecorationsPath(),std::make_shared<TextComponent>(window, "", font, color), [this, FileManagerPath] {
+		mWindow->deinit(false);
+		system((FileManagerPath+" "+Paths::getDecorationsPath()).c_str());
+		mWindow->init(false);
+	});
+	addWithDescription("Shaders Path", Paths::getShadersPath(),std::make_shared<TextComponent>(window, "", font, color), [this, FileManagerPath] {
+		mWindow->deinit(false);
+		system((FileManagerPath+" "+Paths::getShadersPath()).c_str());
+		mWindow->init(false);
+	});
+	addWithDescription("Retroachivement Sounds", Paths::getRetroachivementSounds(),std::make_shared<TextComponent>(window, "", font, color), [this, FileManagerPath] {
+		mWindow->deinit(false);
+		system((FileManagerPath+" "+Paths::getRetroachivementSounds()).c_str());
+		mWindow->init(false);
+	});
+	addWithDescription("EmulationStation Path", Paths::getEmulationStationPath(),std::make_shared<TextComponent>(window, "", font, color), [this, FileManagerPath] {
+		mWindow->deinit(false);
+		system((FileManagerPath+" "+Paths::getEmulationStationPath()).c_str());
+		mWindow->init(false);
+	});
+	addWithDescription("TimeZones Path", Paths::getTimeZonesPath(),std::make_shared<TextComponent>(window, "", font, color), [this, FileManagerPath] {
+		mWindow->deinit(false);
+		system((FileManagerPath+" "+Paths::getTimeZonesPath()).c_str());
+		mWindow->init(false);
+	});
+	addWithDescription("Home Path", Paths::getHomePath(),std::make_shared<TextComponent>(window, "", font, color), [this, FileManagerPath] {
+		mWindow->deinit(false);
+		system((FileManagerPath+" "+Paths::getHomePath()).c_str());
+		mWindow->init(false);
+	});
+	addWithDescription("Exe Path", Paths::getExePath(),std::make_shared<TextComponent>(window, "", font, color), [this, FileManagerPath] {
+		mWindow->deinit(false);
+		system((FileManagerPath+" "+Paths::getExePath()).c_str());
+		mWindow->init(false);
+	});
+	addWithDescription("Cheat Path", "/usr/share/batocera/datainit/cheats", std::make_shared<TextComponent>(window, "", font, color), [this, FileManagerPath] {
+		mWindow->deinit(false);
+		system((FileManagerPath + " /usr/share/batocera/datainit/cheats").c_str());
+		mWindow->init(false);
+	});
+	addWithDescription("Libretro Path", "/usr/lib/libretro", std::make_shared<TextComponent>(window, "", font, color), [this, FileManagerPath] {
+		mWindow->deinit(false);
+		system((FileManagerPath + " /usr/lib/libretro").c_str());
+		mWindow->init(false);
+	});
+	addWithDescription("init.d Path", "/etc/init.d", std::make_shared<TextComponent>(window, "", font, color), [this, FileManagerPath] {
+		mWindow->deinit(false);
+		system((FileManagerPath + " /etc/init.d").c_str());
+		mWindow->init(false);
+	});
 
 	addGroup(_("USER PATH:"));
-	addWithDescription("User Music Path", Paths::getUserMusicPath(), std::make_shared<TextComponent>(window, "", font, color));
-	addWithDescription("User Themes Path", Paths::getUserThemesPath(), std::make_shared<TextComponent>(window, "", font, color));
-	addWithDescription("User Keyboard Mappings Path", Paths::getUserKeyboardMappingsPath(), std::make_shared<TextComponent>(window, "", font, color));
-	addWithDescription("User Decorations Path", Paths::getUserDecorationsPath(), std::make_shared<TextComponent>(window, "", font, color));
-	addWithDescription("User Shaders Path", Paths::getUserShadersPath(), std::make_shared<TextComponent>(window, "", font, color));
-	addWithDescription("User Retroachivement Sounds", Paths::getUserRetroachivementSounds(), std::make_shared<TextComponent>(window, "", font, color));
-	addWithDescription("User EmulationStation Path", Paths::getUserEmulationStationPath(), std::make_shared<TextComponent>(window, "", font, color));
-	addWithDescription("User EmulationStation Setting Path", Paths::getUserEmulationStationPath() + "/es_settings.cfg", std::make_shared<TextComponent>(window, "", font, color));
-	addWithDescription("User EmulationStation Script Path", Paths::getUserEmulationStationPath() + "/script", std::make_shared<TextComponent>(window, "", font, color));
+	addWithDescription("User Music Path", Paths::getUserMusicPath(), std::make_shared<TextComponent>(window, "", font, color), [this, FileManagerPath] {
+		mWindow->deinit(false);
+		system((FileManagerPath+" "+Paths::getUserMusicPath()).c_str());
+		mWindow->init(false);
+	});
+	addWithDescription("User Themes Path", Paths::getUserThemesPath(), std::make_shared<TextComponent>(window, "", font, color), [this, FileManagerPath] {
+		mWindow->deinit(false);
+		system((FileManagerPath+" "+Paths::getUserThemesPath()).c_str());
+		mWindow->init(false);
+	});
+	addWithDescription("User Decorations Path", Paths::getUserDecorationsPath(), std::make_shared<TextComponent>(window, "", font, color), [this, FileManagerPath] {
+		mWindow->deinit(false);
+		system((FileManagerPath+" "+Paths::getUserDecorationsPath()).c_str());
+		mWindow->init(false);
+	});
+	addWithDescription("User EmulationStation Path", Paths::getUserEmulationStationPath(), std::make_shared<TextComponent>(window, "", font, color), [this, FileManagerPath] {
+		mWindow->deinit(false);
+		system((FileManagerPath+" "+Paths::getUserEmulationStationPath()).c_str());
+		mWindow->init(false);
+	});
+	addWithDescription("User EmulationStation Script Path", "/userdata/system/scripts", std::make_shared<TextComponent>(window, "", font, color), [this, FileManagerPath] {
+		mWindow->deinit(false);
+		system((FileManagerPath + " /userdata/system/scripts").c_str());
+		mWindow->init(false);
+	});
+	addWithDescription("User Multimedia Library Path", "/userdata/library", std::make_shared<TextComponent>(window, "", font, color), [this, FileManagerPath] {
+		mWindow->deinit(false);
+		system((FileManagerPath + " /userdata/library").c_str());
+		mWindow->init(false);
+	});
+	addWithDescription("User ROM Path", "/userdata/roms", std::make_shared<TextComponent>(window, "", font, color), [this, FileManagerPath] {
+		mWindow->deinit(false);
+		system((FileManagerPath + " /userdata/roms").c_str());
+		mWindow->init(false);
+	});
+
+	/* Batocera File
+	addWithDescription("User EmulationStation Setting Path", Paths::getUserEmulationStationPath() + "/es_settings.cfg", std::make_shared<TextComponent>(window, "", font, color), [this, FileManagerPath] {
+		mWindow->deinit(false);
+		system((FileManagerPath+" "+Paths::getUserEmulationStationPath()).c_str());
+		mWindow->init(false);
+	});
+	addWithDescription("User Manual Path", Paths::getUserManualPath(),std::make_shared<TextComponent>(window, "", font, color), [this, FileManagerPath] {
+		mWindow->deinit(false);
+		system((FileManagerPath+" "+Paths::getUserManualPath()).c_str());
+		mWindow->init(false);
+	});
+	addWithDescription("System Conf File Path", Paths::getSystemConfFilePath(),std::make_shared<TextComponent>(window, "", font, color));
+	addWithDescription("Version Info Path", Paths::getVersionInfoPath(),std::make_shared<TextComponent>(window, "", font, color), [this, FileManagerPath] {
+		mWindow->deinit(false);
+		system((FileManagerPath+" "+Paths::getVersionInfoPath()).c_str());
+		mWindow->init(false);
+	});
+	
+	*/
 }

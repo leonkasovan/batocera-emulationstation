@@ -3610,9 +3610,9 @@ void GuiMenu::openQuitMenu_static(Window *window, bool quickAccessMenu, bool ani
 
 		s->addEntry(_("FILE MANAGER"), false, [s, window]
 		{
-			window->deinit(true);
+			window->deinit(false);
 			system(SystemConf::getInstance()->get("run.filemanager.path").c_str());
-			window->init(true);
+			window->init(false);
 		}, "iconScraper");
 
 		s->addEntry(_("LAUNCH SCREENSAVER"), false, [s, window]
